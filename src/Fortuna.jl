@@ -5,7 +5,7 @@ module Fortuna
 using Base
 using Distributions
 using FastGaussQuadrature
-using DifferentiationInterface, ForwardDiff, ReverseDiff, FiniteDiff
+using DifferentiationInterface, ADTypes
 using LinearAlgebra
 using NonlinearSolve
 using Random
@@ -20,6 +20,7 @@ using Reexport
 Reexport.@reexport using Distributions: rand, pdf              # Extended functions
 Reexport.@reexport using Distributions: mean, std, cor, params # Useful functions
 Reexport.@reexport using LinearAlgebra: I
+Reexport.@reexport using ADTypes: AutoForwardDiff, AutoReverseDiff, AutoFiniteDiff
 
 # --------------------------------------------------
 # DEFINE ABSTRACT TYPES

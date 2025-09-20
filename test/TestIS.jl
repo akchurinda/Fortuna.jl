@@ -3,26 +3,26 @@
     Random.seed!(123)
 
     # Define a list of reliability indices of interest:
-    βList = 1:6
+    β_list = 1:6
 
-    for i in eachindex(βList)
+    for i in eachindex(β_list)
         # Define a random vector of correlated marginal distributions:
-        X₁ = randomvariable("Normal", "M", [0, 1])
-        X₂ = randomvariable("Normal", "M", [0, 1])
-        X  = [X₁, X₂]
-        ρˣ = [1 0; 0 1]
+        X_1 = randomvariable("Normal", "M", [0, 1])
+        X_2 = randomvariable("Normal", "M", [0, 1])
+        X  = [X_1, X_2]
+        ρ_X = [1 0; 0 1]
 
         # Define a limit state function:
-        g(x::Vector) = βList[i] * sqrt(2) - x[1] - x[2]
+        g(x::Vector) = β_list[i] * sqrt(2) - x[1] - x[2]
 
         # Define a reliability problem:
-        Problem = ReliabilityProblem(X, ρˣ, g)
+        problem = ReliabilityProblem(X, ρ_X, g)
 
         # Perform the reliability analysis using Importance Sampling method:
-        ProposalPDF = MvNormal([βList[i] / sqrt(2), βList[i] / sqrt(2)], [1 0; 0 1])
-        Solution    = solve(Problem, IS(ProposalPDF, 10 ^ 6))
+        q = MvNormal([β_list[i] / sqrt(2), β_list[i] / sqrt(2)], [1 0; 0 1])
+        solution    = solve(problem, IS(q, 10 ^ 6))
 
         # Test the results:
-        @test isapprox(Solution.PoF, cdf(Normal(), -βList[i]), rtol = 5E-2)
+        @test isapprox(solution.PoF, cdf(Normal(), -β_list[i]), rtol = 5E-2)
     end
 end

@@ -48,7 +48,7 @@ After defining an inverse reliability problem, `Fortuna.jl` allows to easily sol
 
 ```@example inverse_reliability_problem
 # Perform the inverse reliability analysis:
-solution = solve(problem, 0.1, x₀ = [0.2, 0.2, 0.2, 0.2])
+solution = solve(problem, 0.1, x_0 = [0.2, 0.2, 0.2, 0.2])
 println("x = $(solution.x[:, end])")
 println("θ = $(solution.θ[end])")
 ```
@@ -56,7 +56,7 @@ println("θ = $(solution.θ[end])")
 ## API
 
 ```@docs
-solve(Problem::InverseReliabilityProblem, θ₀::Real)
+solve(Problem::InverseReliabilityProblem, θ_0::Real)
 InverseReliabilityProblem
 InverseReliabilityProblemCache
 ```

@@ -1,6 +1,7 @@
 using Test
 using Fortuna
-using Random, Distributions
+using Random
+using Distributions
 
 @testset "Random Variables" begin
     include("TestRandomVariables.jl")
@@ -15,7 +16,7 @@ end
 end
 
 @testset "Monte Carlo" begin
-    include("TestMC.jl") 
+    include("TestMC.jl")
 end
 
 @testset "Importance Sampling" begin

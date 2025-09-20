@@ -9,7 +9,7 @@ mutable struct SensitivityProblemTypeI <: AbstractReliabilityProblem
     "Random vector ``\\vec{X}``"
     X::AbstractVector{<:Distributions.UnivariateDistribution}
     "Correlation matrix ``\\rho^{X}``"
-    ρˣ::AbstractMatrix{<:Real}
+    ρ_X::AbstractMatrix{<:Real}
     "Limit state function ``g(\\vec{X}, \\vec{\\Theta})``"
     g::Function
     "Parameters of limit state function ``\\vec{\\Theta}``"
@@ -27,7 +27,7 @@ mutable struct SensitivityProblemTypeII <: AbstractReliabilityProblem
     "Random vector ``\\vec{X}(\\vec{\\Theta})``"
     X::Function
     "Correlation matrix ``\\rho^{X}``"
-    ρˣ::AbstractMatrix{<:Real}
+    ρ_X::AbstractMatrix{<:Real}
     "Limit state function ``g(\\vec{X})``"
     g::Function
     "Parameters of limit state function ``\\vec{\\Theta}``"
@@ -44,7 +44,7 @@ $(TYPEDFIELDS)
 """
 struct SensitivityProblemCache
     "Results of reliability analysis performed using First-Order Reliability Method (FORM)"
-    FORMSolution::iHLRFCache
+    form_solution::iHLRFCache
     "Sensivity vector of reliability index ``\\vec{\\nabla}_{\\vec{\\Theta}} \\beta``"
     ∇β::Vector{Float64}
     "Sensivity vector of probability of failure ``\\vec{\\nabla}_{\\vec{\\Theta}} P_{f}``"
@@ -59,38 +59,38 @@ Function used to solve sensitivity problems of type I (sensitivities w.r.t. the 
 function solve(Problem::SensitivityProblemTypeI; backend = AutoForwardDiff())
     # Extract the problem data:
     X  = Problem.X
-    ρˣ = Problem.ρˣ
+    ρ_X = Problem.ρ_X
     g  = Problem.g
     Θ  = Problem.Θ
 
     # Define a reliability problem for the FORM analysis:
     g₁(x) = g(x, Θ)
-    FORMProblem = ReliabilityProblem(X, ρˣ, g₁)
+    form_problem = ReliabilityProblem(X, ρ_X, g₁)
 
     # Solve the reliability problem using the FORM:
-    FORMSolution = solve(FORMProblem, FORM(), backend = backend)
-    x            = FORMSolution.x[:, end]
-    u            = FORMSolution.u[:, end]
-    β            = FORMSolution.β
+    form_solution = solve(form_problem, FORM(), backend = backend)
+    x            = form_solution.x[:, end]
+    u            = form_solution.u[:, end]
+    β            = form_solution.β
 
     # Perform Nataf transformation:
-    NatafObject = NatafTransformation(X, ρˣ)
+    nataf_obj = NatafTransformation(X, ρ_X)
 
     # Define gradient functions of the limit state function in X- and U-spaces, and compute the sensitivities vector for the reliability index:
     ∇β = try
-        local ∇g(x, θ) = gradient(Unknown -> g(x, Unknown), backend, θ)
-        local ∇G(u, θ) = gradient(Unknown -> G(g, θ, NatafObject, Unknown), backend, u)
+        local ∇g(x, θ) = gradient(unknown -> g(x, unknown), backend, θ)
+        local ∇G(u, θ) = gradient(unknown -> G(g, θ, nataf_obj, unknown), backend, u)
         ∇g(x, Θ) / LinearAlgebra.norm(∇G(u, Θ))
     catch
-        local ∇g(x, θ) = gradient(Unknown -> g(x, Unknown), AutoFiniteDiff(), θ)
-        local ∇G(u, θ) = gradient(Unknown -> G(g, θ, NatafObject, Unknown), AutoFiniteDiff(), u)
+        local ∇g(x, θ) = gradient(unknown -> g(x, unknown), AutoFiniteDiff(), θ)
+        local ∇G(u, θ) = gradient(unknown -> G(g, θ, nataf_obj, unknown), AutoFiniteDiff(), u)
         ∇g(x, Θ) / LinearAlgebra.norm(∇G(u, Θ))
     end
 
     # Compute the sensitivities vector for the probability of failure:
     ∇PoF = -Distributions.pdf(Distributions.Normal(), β) * ∇β
 
-    return SensitivityProblemCache(FORMSolution, ∇β, ∇PoF)
+    return SensitivityProblemCache(form_solution, ∇β, ∇PoF)
 end
 
 """
@@ -101,41 +101,41 @@ Function used to solve sensitivity problems of type II (sensitivities w.r.t. the
 function solve(Problem::SensitivityProblemTypeII; backend = AutoForwardDiff())
     # Extract the problem data:
     X  = Problem.X
-    ρˣ = Problem.ρˣ
+    ρ_X = Problem.ρ_X
     g  = Problem.g
     Θ  = Problem.Θ
 
     # Define a reliability problem for the FORM analysis:
-    FORMProblem = ReliabilityProblem(X(Θ), ρˣ, g)
+    form_problem = ReliabilityProblem(X(Θ), ρ_X, g)
 
     # Solve the reliability problem using the FORM:
-    FORMSolution = solve(FORMProblem, FORM(), backend = backend)
-    x            = FORMSolution.x[:, end]
-    α            = FORMSolution.α[:, end]
-    β            = FORMSolution.β
+    form_solution = solve(form_problem, FORM(), backend = backend)
+    x            = form_solution.x[:, end]
+    α            = form_solution.α[:, end]
+    β            = form_solution.β
 
     # Define the Jacobian of the transformation function w.r.t. the parameters of the random vector and compute the sensitivity vector for the reliability index:
     ∇β = try
-        local ∇T(θ) = jacobian(Unknown -> transformsamples(NatafTransformation(X(Unknown), ρˣ), x, :X2U), backend, θ)
+        local ∇T(θ) = jacobian(unknown -> transformsamples(NatafTransformation(X(unknown), ρ_X), x, :X2U), backend, θ)
         vec(LinearAlgebra.transpose(α) * ∇T(Θ))
     catch
-        local ∇T(θ) = jacobian(Unknown -> transformsamples(NatafTransformation(X(Unknown), ρˣ), x, :X2U), AutoFiniteDiff(), θ)
+        local ∇T(θ) = jacobian(unknown -> transformsamples(NatafTransformation(X(unknown), ρ_X), x, :X2U), AutoFiniteDiff(), θ)
         vec(LinearAlgebra.transpose(α) * ∇T(Θ))
     end
 
     # Compute the sensitivity vector for the probability of failure:
     ∇PoF = -Distributions.pdf(Distributions.Normal(), β) * ∇β
 
-    return SensitivityProblemCache(FORMSolution, ∇β, ∇PoF)
+    return SensitivityProblemCache(form_solution, ∇β, ∇PoF)
 end
 
-function G(g::Function, Θ::AbstractVector{<:Real}, NatafObject::NatafTransformation, USample::AbstractVector{<:Real})
+function G(g::Function, Θ::AbstractVector{<:Real}, nataf_obj::NatafTransformation, U_sample::AbstractVector{<:Real})
     # Transform samples:
-    XSample = transformsamples(NatafObject, USample, :U2X)
+    X_sample = transformsamples(nataf_obj, U_sample, :U2X)
 
     # Evaluate the limit state function at the transform samples:
-    GSample = g(XSample, Θ)
+    G_sample = g(X_sample, Θ)
 
     # Return the result:
-    return GSample
+    return G_sample
 end

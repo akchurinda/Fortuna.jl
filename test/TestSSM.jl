@@ -3,26 +3,26 @@
     Random.seed!(123)
 
     # Define a list of reliability indices of interest:
-    βList = 1:6
+    β_list = 1:6
 
-    for i in eachindex(βList)
+    for i in eachindex(β_list)
         # Define a random vector of uncorrelated marginal distributions:
-        X₁ = randomvariable("Normal", "M", [0, 1])
-        X₂ = randomvariable("Normal", "M", [0, 1])
-        X  = [X₁, X₂]
-        ρˣ = [1 0; 0 1]
+        X_1 = randomvariable("Normal", "M", [0, 1])
+        X_2 = randomvariable("Normal", "M", [0, 1])
+        X  = [X_1, X_2]
+        ρ_X = [1 0; 0 1]
 
         # Define a limit state function:
-        g(x::Vector) = βList[i] * sqrt(2) - x[1] - x[2]
+        g(x::Vector) = β_list[i] * sqrt(2) - x[1] - x[2]
 
         # Define reliability problems:
-        Problem = ReliabilityProblem(X, ρˣ, g)
+        problem = ReliabilityProblem(X, ρ_X, g)
 
         # Perform the reliability analysis using SSM:
-        Solution = solve(Problem, SSM())
+        solution = solve(problem, SSM())
 
         # Test the results:
-        @test isapprox(Solution.PoF, cdf(Normal(), -βList[i]), rtol = 0.10)
+        @test isapprox(solution.PoF, cdf(Normal(), -β_list[i]), rtol = 0.10)
     end
 end
 
@@ -33,10 +33,10 @@ end
     Random.seed!(123)
 
     # Define random vector:
-    X₁ = randomvariable("Normal", "M", [0, 1])
-    X₂ = randomvariable("Normal", "M", [0, 1])
-    X  = [X₁, X₂]
-    ρˣ = [1 0; 0 1]
+    X_1 = randomvariable("Normal", "M", [0, 1])
+    X_2 = randomvariable("Normal", "M", [0, 1])
+    X  = [X_1, X_2]
+    ρ_X = [1 0; 0 1]
 
     # Define limit state function:
     a = 5.50
@@ -46,11 +46,11 @@ end
     g(x::Vector) = a - x[2] + b * x[1] ^ 3 + c * sin(d * x[1])
 
     # Define reliability problem:
-    Problem = ReliabilityProblem(X, ρˣ, g)
+    problem = ReliabilityProblem(X, ρ_X, g)
 
     # Solve reliability problem using Subset Simulation Method:
-    Solution = solve(Problem, SSM())
+    solution = solve(problem, SSM())
 
     # Test the results:
-    @test isapprox(Solution.PoF, 3.53 * 10 ^ (-7), rtol = 0.10)
+    @test isapprox(solution.PoF, 3.53 * 10 ^ (-7), rtol = 0.10)
 end

@@ -100,7 +100,7 @@ nothing # hide
 - Define a transformation object that hold all information about the defined random vector.
 
 ```@example sample_rv
-transformation_object = NatafTransformation(X, ρ_X)
+trans_obj = NatafTransformation(X, ρ_X)
 
 nothing # hide
 ```
@@ -108,7 +108,7 @@ nothing # hide
 - Sample the defined random vector using a sampling technique of your choice.
 
 ```@example sample_rv
-X_samples, Z_samples, U_samples = rand(transformation_object, 10000, :LHS)
+X_samples, Z_samples, U_samples = rand(trans_obj, 10000, :LHS)
 
 nothing # hide
 ```

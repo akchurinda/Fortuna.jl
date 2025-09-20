@@ -9,7 +9,7 @@ mutable struct InverseReliabilityProblem <: AbstractReliabilityProblem
     "Random vector ``\\vec{X}``"
     X::AbstractVector{<:Distributions.UnivariateDistribution}
     "Correlation matrix ``\\rho^{X}``"
-    ρˣ ::AbstractMatrix{<:Real}
+    ρ_X ::AbstractMatrix{<:Real}
     "Limit state function ``g(\\vec{X}, \\theta)``"
     g  ::Function
     "Target reliability index ``\\beta_t``"
@@ -33,9 +33,9 @@ struct InverseReliabilityProblemCache
     "Limit state function at each iteration ``G(\\vec{u}_{i}^{*}, \\theta_{i})``"
     G::Vector{Float64}
     "Gradient of the limit state function at each iteration ``\\nabla_{\\vec{u}} G(\\vec{u}_{i}^{*}, \\theta_{i})``"
-    ∇Gu::Matrix{Float64}
+    ∇G_u::Matrix{Float64}
     "Gradient of the limit state function at each iteration ``\\nabla_{\\theta} G(\\vec{u}_{i}^{*}, \\theta_{i})``"
-    ∇Gθ::Vector{Float64}
+    ∇G_θ::Vector{Float64}
     "Normalized negative gradient of the limit state function at each iteration ``\\vec{\\alpha}_{i}``"
     α::Matrix{Float64}
     "Search direction for the design point in U-space at each iteration ``\\vec{d}_{u_{i}}``"
@@ -43,13 +43,13 @@ struct InverseReliabilityProblemCache
     "Search direction for the parameter of interest at each iteration ``\\vec{d}_{u_{i}}``"
     dθ::Vector{Float64}
     "``c_{1}``-coefficients at each iteration ``c_{1_{i}}``"
-    c₁::Vector{Float64}
+    c_1::Vector{Float64}
     "``c_{2}``-coefficients at each iteration ``c_{2_{i}}``"
-    c₂::Vector{Float64}
+    c_2::Vector{Float64}
     "First merit function at each iteration ``m_{1_{i}}``"
-    m₁::Vector{Float64}
+    m_1::Vector{Float64}
     "Second merit function at each iteration ``m_{2_{i}}``"
-    m₂::Vector{Float64}
+    m_2::Vector{Float64}
     "Merit function at each iteration ``m_{i}``"
     m::Vector{Float64}
     "Step size at each iteration ``\\lambda_{i}``"
@@ -57,174 +57,174 @@ struct InverseReliabilityProblemCache
 end
 
 """
-    solve(Problem::InverseReliabilityProblem, θ₀::Real; 
-        x₀::Union{Nothing, Vector{<:Real}} = nothing, 
-        MaxNumIterations = 250, ϵ₁ = 10E-6, ϵ₂ = 10E-6, ϵ₃ = 10E-3,
+    solve(Problem::InverseReliabilityProblem, θ_0::Real; 
+        x_0::Union{Nothing, Vector{<:Real}} = nothing, 
+        max_num_iters = 250, ϵ₁ = 10E-6, ϵ₂ = 10E-6, ϵ₃ = 10E-3,
         backend = AutoForwardDiff())
 
 Function used to solve inverse reliability problems.
 """
-function solve(Problem::InverseReliabilityProblem, θ₀::Real; 
-    MaxNumIterations = 250, ϵ₁ = 1E-6, ϵ₂ = 1E-6, ϵ₃ = 1E-6,
-    x₀::Union{Nothing, Vector{<:Real}} = nothing, 
-    c₀::Union{Nothing, Real} = nothing,
+function solve(Problem::InverseReliabilityProblem, θ_0::Real; 
+    max_num_iters = 250, ϵ₁ = 1E-6, ϵ₂ = 1E-6, ϵ₃ = 1E-6,
+    x_0::Union{Nothing, Vector{<:Real}} = nothing, 
+    c_0::Union{Nothing, Real} = nothing,
     backend = AutoForwardDiff())
     # Extract the problem data:
     X  = Problem.X
-    ρˣ = Problem.ρˣ
+    ρ_X = Problem.ρ_X
     g  = Problem.g
     β  = Problem.β
 
     # Compute number of dimensions: 
-    NumDimensions = length(X)
+    num_dims = length(X)
 
     # Preallocate:
-    x   = Matrix{Float64}(undef, NumDimensions, MaxNumIterations)
-    u   = Matrix{Float64}(undef, NumDimensions, MaxNumIterations)
-    θ   = Vector{Float64}(undef, MaxNumIterations)
-    G   = Vector{Float64}(undef, MaxNumIterations)
-    ∇Gu = Matrix{Float64}(undef, NumDimensions, MaxNumIterations)
-    ∇Gθ = Vector{Float64}(undef, MaxNumIterations)
-    α   = Matrix{Float64}(undef, NumDimensions, MaxNumIterations)
-    du  = Matrix{Float64}(undef, NumDimensions, MaxNumIterations)
-    dθ  = Vector{Float64}(undef, MaxNumIterations)
-    c₁  = Vector{Float64}(undef, MaxNumIterations)
-    c₂  = Vector{Float64}(undef, MaxNumIterations)
-    m₁  = Vector{Float64}(undef, MaxNumIterations)
-    m₂  = Vector{Float64}(undef, MaxNumIterations)
-    m   = Vector{Float64}(undef, MaxNumIterations)
-    λ   = Vector{Float64}(undef, MaxNumIterations)
+    x   = Matrix{Float64}(undef, num_dims, max_num_iters)
+    u   = Matrix{Float64}(undef, num_dims, max_num_iters)
+    θ   = Vector{Float64}(undef, max_num_iters)
+    G   = Vector{Float64}(undef, max_num_iters)
+    ∇G_u = Matrix{Float64}(undef, num_dims, max_num_iters)
+    ∇G_θ = Vector{Float64}(undef, max_num_iters)
+    α   = Matrix{Float64}(undef, num_dims, max_num_iters)
+    du  = Matrix{Float64}(undef, num_dims, max_num_iters)
+    dθ  = Vector{Float64}(undef, max_num_iters)
+    c_1  = Vector{Float64}(undef, max_num_iters)
+    c_2  = Vector{Float64}(undef, max_num_iters)
+    m_1  = Vector{Float64}(undef, max_num_iters)
+    m_2  = Vector{Float64}(undef, max_num_iters)
+    m   = Vector{Float64}(undef, max_num_iters)
+    λ   = Vector{Float64}(undef, max_num_iters)
 
     # Perform the Nataf Transformation:
-    NatafObject = NatafTransformation(X, ρˣ)
+    nataf_obj = NatafTransformation(X, ρ_X)
 
     # Initialize the design point in X-space:
-    x[:, 1] = isnothing(x₀) ? mean.(X) : x₀
+    x[:, 1] = isnothing(x_0) ? mean.(X) : x_0
 
     # Initialize the unknown parameter:
-    θ[1] = θ₀
+    θ[1] = θ_0
 
     # Compute the initial design point in U-space:
-    u[:, 1] = transformsamples(NatafObject, x[:, 1], :X2U)
+    u[:, 1] = transformsamples(nataf_obj, x[:, 1], :X2U)
 
     # Evaluate the limit state function at the initial design point:
     G₀ = g(x[:, 1], θ[1])
 
     # Start iterating:
-    for i in 1:(MaxNumIterations - 1)
+    for i in 1:(max_num_iters - 1)
         # Compute the design point in X-space:
         if i != 1
-            x[:, i] = transformsamples(NatafObject, u[:, i], :U2X)
+            x[:, i] = transformsamples(nataf_obj, u[:, i], :U2X)
         end
 
         # Compute the Jacobian of the transformation of the design point from X- to U-space:
-        Jₓᵤ = getjacobian(NatafObject, x[:, i], :X2U)
+        J_x_to_u = getjacobian(nataf_obj, x[:, i], :X2U)
 
         # Evaluate the limit state function at the design point in X-space:
         G[i] = g(x[:, i], θ[i])
 
         # Evaluate gradients of the limit state function at the design point in X-space:
-        ∇gx = try
-            local ∇gx(x, θ) = LinearAlgebra.transpose(ForwardDiff.gradient(Unknown -> g(Unknown, θ), x))
-            ∇gx(x[:, i], θ[i])
+        ∇g_x = try
+            local ∇g_x(x, θ) = LinearAlgebra.transpose(gradient(Unknown -> g(Unknown, θ), backend, x))
+            ∇g_x(x[:, i], θ[i])
         catch
-            local ∇gx(x, θ) = LinearAlgebra.transpose(FiniteDiff.finite_difference_gradient(Unknown -> g(Unknown, θ), x))
-            ∇gx(x[:, i], θ[i])
+            local ∇g_x(x, θ) = LinearAlgebra.transpose(gradient(Unknown -> g(Unknown, θ), AutoFiniteDiff(), x))
+            ∇g_x(x[:, i], θ[i])
         end
 
-        ∇gθ = try
-            local ∇gθ(x, θ) = ForwardDiff.derivative(Unknown -> g(x, Unknown), θ)
-            ∇gθ(x[:, i], θ[i])
+        ∇g_θ = try
+            local ∇g_θ(x, θ) = derivative(Unknown -> g(x, Unknown), backend, θ)
+            ∇g_θ(x[:, i], θ[i])
         catch
-            local ∇gθ(x, θ) = FiniteDiff.finite_difference_derivative(Unknown -> g(x, Unknown), θ)
-            ∇gθ(x[:, i], θ[i])
+            local ∇g_θ(x, θ) = derivative(Unknown -> g(x, Unknown), AutoFiniteDiff(), θ)
+            ∇g_θ(x[:, i], θ[i])
         end
 
         # Convert the evaluated gradients of the limit state function from X- to U-space:
-        ∇Gu[:, i] = vec(∇gx * Jₓᵤ)
-        ∇Gθ[i]    = ∇gθ
+        ∇G_u[:, i] = vec(∇g_x * J_x_to_u)
+        ∇G_θ[i]    = ∇g_θ
 
         # Compute the normalized negative gradient vector at the design point in U-space:
-        α[:, i] = -∇Gu[:, i] / LinearAlgebra.norm(∇Gu[:, i])
+        α[:, i] = -∇G_u[:, i] / LinearAlgebra.norm(∇G_u[:, i])
 
         # Compute the c-coefficients:
-        c₁[i] = isnothing(c₀) ? 2 * LinearAlgebra.norm(u[:, i]) / LinearAlgebra.norm(∇Gu[:, i]) + 10 : c₀
-        c₂[i] = 1
+        c_1[i] = isnothing(c_0) ? 2 * LinearAlgebra.norm(u[:, i]) / LinearAlgebra.norm(∇G_u[:, i]) + 10 : c_0
+        c_2[i] = 1
 
         # Compute the merit functions at the current design point:
-        m₁[i] = 0.5 * LinearAlgebra.norm(u[:, i]) ^ 2 + c₁[i] * abs(G[i])
-        m₂[i] = 0.5 * c₂[i] * (LinearAlgebra.norm(u[:, i]) - β) ^ 2
-        m[i]  = m₁[i] + m₂[i]
+        m_1[i] = 0.5 * LinearAlgebra.norm(u[:, i]) ^ 2 + c_1[i] * abs(G[i])
+        m_2[i] = 0.5 * c_2[i] * (LinearAlgebra.norm(u[:, i]) - β) ^ 2
+        m[i]  = m_1[i] + m_2[i]
 
         # Compute the search directions:
         du[:, i] = β * α[:, i] - u[:, i]
-        dθ[i]    = (LinearAlgebra.norm(∇Gu[:, i]) / ∇Gθ[i]) * (β - LinearAlgebra.dot(α[:, i], u[:, i]) - G[i] / LinearAlgebra.norm(∇Gu[:, i]))
+        dθ[i]    = (LinearAlgebra.norm(∇G_u[:, i]) / ∇G_θ[i]) * (β - LinearAlgebra.dot(α[:, i], u[:, i]) - G[i] / LinearAlgebra.norm(∇G_u[:, i]))
 
         # Find a step size that satisfies m(uᵢ + λᵢdᵢ) < m(uᵢ):
-        λₜ = 1
-        uₜ = u[:, i] + λₜ * du[:, i]
-        θₜ = θ[i] + λₜ * dθ[i]
-        xₜ = transformsamples(NatafObject, uₜ, :U2X)
-        Gₜ = g(xₜ, θₜ)
-        m₁ₜ = 0.5 * LinearAlgebra.norm(uₜ) ^ 2 + c₁[i] * abs(Gₜ)
-        m₂ₜ = 0.5 * c₂[i] * (LinearAlgebra.norm(u[:, i]) - β) ^ 2
-        mₜ  = m₁ₜ + m₂ₜ
-        while mₜ > m[i]
+        λ_t = 1
+        u_t = u[:, i] + λ_t * du[:, i]
+        θ_t = θ[i] + λ_t * dθ[i]
+        x_t = transformsamples(nataf_obj, u_t, :U2X)
+        G_t = g(x_t, θ_t)
+        m_1_t = 0.5 * LinearAlgebra.norm(u_t) ^ 2 + c_1[i] * abs(G_t)
+        m_2_t = 0.5 * c_2[i] * (LinearAlgebra.norm(u[:, i]) - β) ^ 2
+        m_t  = m_1_t + m_2_t
+        while m_t > m[i]
             # Update the step size:
-            λₜ = λₜ / 2
+            λ_t = λ_t / 2
 
             # Recalculate the merit function:
-            uₜ = u[:, i] + λₜ * du[:, i]
-            θₜ = θ[i] + λₜ * dθ[i]
-            xₜ = transformsamples(NatafObject, uₜ, :U2X)
-            Gₜ = g(xₜ, θₜ)
-            m₁ₜ = 0.5 * LinearAlgebra.norm(uₜ) ^ 2 + c₁[i] * abs(Gₜ)
-            m₂ₜ = 0.5 * c₂[i] * (LinearAlgebra.norm(uₜ) - β) ^ 2
-            mₜ = m₁ₜ + m₂ₜ
+            u_t = u[:, i] + λ_t * du[:, i]
+            θ_t = θ[i] + λ_t * dθ[i]
+            x_t = transformsamples(nataf_obj, u_t, :U2X)
+            G_t = g(x_t, θ_t)
+            m_1_t = 0.5 * LinearAlgebra.norm(u_t) ^ 2 + c_1[i] * abs(G_t)
+            m_2_t = 0.5 * c_2[i] * (LinearAlgebra.norm(u_t) - β) ^ 2
+            m_t = m_1_t + m_2_t
         end
 
         # Update the step size:
-        λ[i] = λₜ
+        λ[i] = λ_t
 
         # Compute the new design point in U-space:
         u[:, i + 1] = u[:, i] + λ[i] * du[:, i]
         θ[i + 1] = θ[i] + λ[i] * dθ[i]
 
         # Compute the new design point in X-space:
-        x[:, i + 1] = transformsamples(NatafObject, u[:, i + 1], :U2X)
+        x[:, i + 1] = transformsamples(nataf_obj, u[:, i + 1], :U2X)
 
         # Check for convergance:
-        Criterion₁ = abs(g(x[:, i], θ[i]) / G₀) # Check if the limit state function is close to zero.
-        Criterion₂ = LinearAlgebra.norm(u[:, i] - LinearAlgebra.dot(α[:, i], u[:, i]) * α[:, i]) # Check if the design point is on the failure boundary.
-        Criterion₃ = LinearAlgebra.norm(u[:, i + 1] - u[:, i]) / LinearAlgebra.norm(u[:, i]) 
+        criterion_1 = abs(g(x[:, i], θ[i]) / G₀) # Check if the limit state function is close to zero.
+        criterion_2 = LinearAlgebra.norm(u[:, i] - LinearAlgebra.dot(α[:, i], u[:, i]) * α[:, i]) # Check if the design point is on the failure boundary.
+        criterion_3 = LinearAlgebra.norm(u[:, i + 1] - u[:, i]) / LinearAlgebra.norm(u[:, i]) 
                    + abs(θ[i + 1] - θ[i]) / abs(θ[i]) 
                    + abs(LinearAlgebra.dot(α[:, i], u[:, i]) - β) / β # Check if the solution has converged.
-        if Criterion₁ < ϵ₁ && Criterion₂ < ϵ₂ && Criterion₃ < ϵ₃ && i != MaxNumIterations
+        if criterion_1 < ϵ₁ && criterion_2 < ϵ₂ && criterion_3 < ϵ₃ && i != max_num_iters
             # Clean up the results:
             x   = x[:, 1:i]
             u   = u[:, 1:i]
             θ   = θ[1:i]
             G   = G[1:i]
-            ∇Gu = ∇Gu[:, 1:i]
-            ∇Gθ = ∇Gθ[1:i]
+            ∇G_u = ∇G_u[:, 1:i]
+            ∇G_θ = ∇G_θ[1:i]
             α   = α[:, 1:i]
             du  = du[:, 1:i]
             dθ  = dθ[1:i]
-            c₁  = c₁[1:i]
-            c₂  = c₂[1:i]
-            m₁  = m₁[1:i]
-            m₂  = m₂[1:i]
+            c_1  = c_1[1:i]
+            c_2  = c_2[1:i]
+            m_1  = m_1[1:i]
+            m_2  = m_2[1:i]
             m   = m[1:i]
             λ   = λ[1:i]
             
             # Return results:
-            return InverseReliabilityProblemCache(x, u, θ, G, ∇Gu, ∇Gθ, α, du, dθ, c₁, c₂, m₁, m₂, m, λ)
+            return InverseReliabilityProblemCache(x, u, θ, G, ∇G_u, ∇G_θ, α, du, dθ, c_1, c_2, m_1, m_2, m, λ)
 
             # Break out:
             continue
         else
             # Check for convergance:
-            i == MaxNumIterations && error("The solution did not converge. Try increasing the maximum number of iterations (MaxNumIterations) or relaxing the convergance criterions (ϵ₁, ϵ₂, and ϵ₃).")
+            i == max_num_iters && error("The solution did not converge. Try increasing the maximum number of iterations (max_num_iters) or relaxing the convergance criterions (ϵ₁, ϵ₂, and ϵ₃).")
         end
     end
 end

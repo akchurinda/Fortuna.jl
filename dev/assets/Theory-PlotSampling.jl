@@ -34,9 +34,9 @@ save("docs/src/assets/Plots (Theory)/Sampling-1.png", F)
 # --------------------------------------------------
 # SCATTER (UNCORRELATED)
 # --------------------------------------------------
-X₁          = randomvariable("Gamma", "M", [10, 1.5])
-X₂          = randomvariable("Gamma", "M", [15, 2.5])
-X           = [X₁, X₂]
+X_1          = randomvariable("Gamma", "M", [10, 1.5])
+X_2          = randomvariable("Gamma", "M", [15, 2.5])
+X           = [X_1, X_2]
 XSamples    = rand(X, 10000, :LHS)
 
 begin
@@ -64,11 +64,11 @@ save("docs/src/assets/Plots (Theory)/Sampling-2.png", F)
 # --------------------------------------------------
 # SCATTER (CORRELATED)
 # --------------------------------------------------
-X₁                              = randomvariable("Gamma", "M", [10, 1.5])
-X₂                              = randomvariable("Gamma", "M", [15, 2.5])
-X                               = [X₁, X₂]
-ρˣ                              = [1 -0.75; -0.75 1]
-TransformationObject            = NatafTransformation(X, ρˣ)
+X_1                              = randomvariable("Gamma", "M", [10, 1.5])
+X_2                              = randomvariable("Gamma", "M", [15, 2.5])
+X                               = [X_1, X_2]
+ρ_X                              = [1 -0.75; -0.75 1]
+TransformationObject            = NatafTransformation(X, ρ_X)
 XSamples, ZSamples, USamples    = rand(TransformationObject, 10000, :LHS)
 
 begin

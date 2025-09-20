@@ -2,13 +2,13 @@ using Fortuna
 using CairoMakie, MathTeXEngine
 CairoMakie.activate!(type = :png, px_per_unit = 10)
 
-X₁  = randomvariable("Gamma", "M", [10, 1.5])
-X₂  = randomvariable("Gamma", "M", [15, 2.5])
-X   = [X₁, X₂]
+X_1  = randomvariable("Gamma", "M", [10, 1.5])
+X_2  = randomvariable("Gamma", "M", [15, 2.5])
+X   = [X_1, X_2]
 
-ρˣ = [1 -0.75; -0.75 1]
+ρ_X = [1 -0.75; -0.75 1]
 
-NatafObject = NatafTransformation(X, ρˣ)
+NatafObject = NatafTransformation(X, ρ_X)
 
 XSamples, ZSamples, USamples = rand(NatafObject, 10000, LHS())
 
@@ -65,9 +65,9 @@ end
 
 save("docs/src/assets/Plots (Examples)/NatafTransformation-1.png", F)
 
-xRange₁ = range(0, 20, 500)
-xRange₂ = range(5, 25, 500)
-fSamples = [pdf(NatafObject, [x₁, x₂]) for x₁ in xRange₁, x₂ in xRange₂]
+x_1_range = range(0, 20, 500)
+x_2_range = range(5, 25, 500)
+fSamples = [pdf(NatafObject, [x_1, x_2]) for x_1 in x_1_range, x_2 in x_2_range]
 
 begin
     F = Figure(size = 72 .* (6, 6), fonts = (; regular = texfont()), fontsize = 14)
@@ -81,11 +81,11 @@ begin
         limits = (0, 20, 5, 25),
         aspect = 1)
 
-    contourf!(xRange₁, xRange₂, fSamples,
+    contourf!(x_1_range, x_2_range, fSamples,
         levels = minimum(fSamples) : (maximum(fSamples) - minimum(fSamples)) / 15 : maximum(fSamples),
         colormap = cgrad([:transparent, :deepskyblue]))
     
-    contour!(xRange₁, xRange₂, fSamples,
+    contour!(x_1_range, x_2_range, fSamples,
         levels = minimum(fSamples) : (maximum(fSamples) - minimum(fSamples)) / 15 : maximum(fSamples),
         colormap = cgrad([:transparent, :black]),
         linewidth = 0.5)

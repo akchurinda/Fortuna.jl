@@ -2,23 +2,23 @@ using Fortuna
 using CairoMakie, MathTeXEngine
 CairoMakie.activate!(type = :png, px_per_unit = 10)
 
-X₁  = randomvariable("Normal", "M", [0, 1])
-X₂  = randomvariable("Normal", "M", [0, 1])
-X   = [X₁, X₂]
+X_1  = randomvariable("Normal", "M", [0, 1])
+X_2  = randomvariable("Normal", "M", [0, 1])
+X   = [X_1, X_2]
 
-ρˣ  = [1 0; 0 1]
+ρ_X  = [1 0; 0 1]
 
-NatafObject = NatafTransformation(X, ρˣ)
+NatafObject = NatafTransformation(X, ρ_X)
 
 β               = 3
 g(x::Vector)    = β * sqrt(2) - x[1] - x[2]
 
-Problem = ReliabilityProblem(X, ρˣ, g)
-Solution = solve(Problem, SSM())
+problem = ReliabilityProblem(X, ρ_X, g)
+solution = solve(problem, SSM())
 
-xRange₁ = range(-3, +6, 500)
-xRange₂ = range(-3, +6, 500)
-gSamples = [g([x₁, x₂]) for x₁ in xRange₁, x₂ in xRange₂]
+x_1_range = range(-3, +6, 500)
+x_2_range = range(-3, +6, 500)
+g_samples = [g([x_1, x_2]) for x_1 in x_1_range, x_2 in x_2_range]
 
 begin
     F = Figure(size = 72 .* (6, 6), fonts = (; regular = texfont()), fontsize = 14)
@@ -31,20 +31,20 @@ begin
         limits = (-3, +6, -3, +6),
         aspect = 1)
 
-    contour!(xRange₁, xRange₂, gSamples,
+    contour!(x_1_range, x_2_range, g_samples,
         levels = [0],
         color = (:black, 0.25))
 
-    contourf!(xRange₁, xRange₂, gSamples,
+    contourf!(x_1_range, x_2_range, g_samples,
         levels = [0],
         extendhigh = (:green, 0.25), extendlow = (:red, 0.25))
 
-    for i in eachindex(Solution.CSubset)
-        contour!(xRange₁, xRange₂, gSamples,
-            levels = [Solution.CSubset[i]],
+    for i in eachindex(solution.CSubset)
+        contour!(x_1_range, x_2_range, g_samples,
+            levels = [solution.CSubset[i]],
             color = (:black, 0.25))
 
-        scatter!(Solution.XSamplesSubset[i][1, 1:100:end], Solution.XSamplesSubset[i][2, 1:100:end],
+        scatter!(solution.XSamplesSubset[i][1, 1:100:end], solution.XSamplesSubset[i][2, 1:100:end],
             alpha = 0.5, 
             strokecolor = (:black, 0.5), strokewidth = 0.25,
             markersize = 6)

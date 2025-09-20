@@ -2,23 +2,23 @@ using Fortuna
 using CairoMakie, MathTeXEngine
 CairoMakie.activate!(type = :png, px_per_unit = 10)
 
-X₁  = randomvariable("Normal", "M", [0, 1])
-X₂  = randomvariable("Normal", "M", [0, 1])
-X   = [X₁, X₂]
+X_1  = randomvariable("Normal", "M", [0, 1])
+X_2  = randomvariable("Normal", "M", [0, 1])
+X   = [X_1, X_2]
 
-ρˣ = [1 0; 0 1]
+ρ_X = [1 0; 0 1]
 
-NatafObject = NatafTransformation(X, ρˣ)
+NatafObject = NatafTransformation(X, ρ_X)
 
 β               = 3
 g(x::Vector)    = β * sqrt(2) - x[1] - x[2]
 
-Problem = ReliabilityProblem(X, ρˣ, g)
-Solution = solve(Problem, MC())
+problem = ReliabilityProblem(X, ρ_X, g)
+solution = solve(problem, MC())
 
-xRange₁ = range(-3, +6, 500)
-xRange₂ = range(-3, +6, 500)
-gSamples = [g([x₁, x₂]) for x₁ in xRange₁, x₂ in xRange₂]
+x_1_range = range(-3, +6, 500)
+x_2_range = range(-3, +6, 500)
+g_samples = [g([x_1, x_2]) for x_1 in x_1_range, x_2 in x_2_range]
 
 begin
     F = Figure(size = 72 .* (6, 6), fonts = (; regular = texfont()), fontsize = 14)
@@ -28,18 +28,18 @@ begin
         xminorticks = IntervalsBetween(5), yminorticks = IntervalsBetween(5),
         xminorticksvisible = true, yminorticksvisible = true,
         xminorgridvisible = true, yminorgridvisible = true,
-        limits = (minimum(xRange₁), maximum(xRange₁), minimum(xRange₂), maximum(xRange₂)),
+        limits = (minimum(x_1_range), maximum(x_1_range), minimum(x_2_range), maximum(x_2_range)),
         aspect = 1)
 
-    contour!(xRange₁, xRange₂, gSamples, label = L"$g(\vec{\mathbf{x}}) = 0$",
+    contour!(x_1_range, x_2_range, g_samples, label = L"$g(\vec{\mathbf{x}}) = 0$",
         levels = [0],
         color = (:black, 0.25))
 
-    contourf!(xRange₁, xRange₂, gSamples,
+    contourf!(x_1_range, x_2_range, g_samples,
         levels = [0],
         extendhigh = (:green, 0.25), extendlow = (:red, 0.25))
 
-    scatter!(Solution.Samples[1, 1:100:end], Solution.Samples[2, 1:100:end],
+    scatter!(solution.Samples[1, 1:100:end], solution.Samples[2, 1:100:end],
         color = (:steelblue, 0.5), 
         strokecolor = (:black, 0.5), strokewidth = 0.25,
         markersize = 6)

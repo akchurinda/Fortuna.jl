@@ -33,7 +33,7 @@ println("θ: $(params(Q)[2])")
 ## Supported Random Variables
 
 !!! note
-    If you want to define a random variable that is not supported by `Fortuna.jl` package, please raise an issue on the [Github Issues](https://github.com/AkchurinDA/Fortuna.jl/issues) page.
+    If you want to define a random variable that is not supported by `Fortuna.jl` package, please raise an issue on the [Github Issues](https://github.com/akchurinda/Fortuna.jl/issues) page.
 
 `Fortuna.jl` package currently supports the following distributions:
 - [Exponential](https://juliastats.org/Distributions.jl/latest/univariate/#Distributions.Exponential)

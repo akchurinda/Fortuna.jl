@@ -5,12 +5,12 @@
 
   | Developer | [Damir Akchurin](https://scholar.google.com/citations?user=chYaDcIAAAAJ&hl=en) |
   | :--- | :--- |
-  | Build Status | [![Build Status](https://github.com/AkchurinDA/Fortuna.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/AkchurinDA/Fortuna.jl/actions/workflows/CI.yml) |
-  | Latest Release | [![Latest Release](https://juliahub.com/docs/Fortuna/version.svg)](https://github.com/AkchurinDA/Fortuna.jl/releases) |
+  | Build Status | [![Build Status](https://github.com/akchurinda/Fortuna.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/akchurinda/Fortuna.jl/actions/workflows/CI.yml) |
+  | Latest Release | [![Latest Release](https://juliahub.com/docs/Fortuna/version.svg)](https://github.com/akchurinda/Fortuna.jl/releases) |
   | Citation | [![status](https://joss.theoj.org/papers/9df63bb9d4f1722272f85a0fc2249856/status.svg)](https://joss.theoj.org/papers/9df63bb9d4f1722272f85a0fc2249856) |
-  | Documentation | [![Documentation](https://img.shields.io/badge/Documentation-Stable-blue.svg)](https://AkchurinDA.github.io/Fortuna.jl/stable) <br> [![Documentation](https://img.shields.io/badge/Documentation-Dev-blue.svg)](https://AkchurinDA.github.io/Fortuna.jl/dev) |
+  | Documentation | [![Documentation](https://img.shields.io/badge/Documentation-Stable-blue.svg)](https://akchurinda.github.io/Fortuna.jl/stable) <br> [![Documentation](https://img.shields.io/badge/Documentation-Dev-blue.svg)](https://akchurinda.github.io/Fortuna.jl/dev) |
   | Downloads | [![Downloads](https://img.shields.io/badge/dynamic/json?url=http%3A%2F%2Fjuliapkgstats.com%2Fapi%2Fv1%2Ftotal_downloads%2FFortuna&query=total_requests&label=Total)](http://juliapkgstats.com/pkg/Fortuna) <br> [![Downloads](https://img.shields.io/badge/dynamic/json?url=http%3A%2F%2Fjuliapkgstats.com%2Fapi%2Fv1%2Fmonthly_downloads%2FFortuna&query=total_requests&label=Monthly&suffix=%2FMonth)](http://juliapkgstats.com/pkg/Fortuna) |
-  | License | [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/AkchurinDA/Fortuna.jl/blob/main/LICENSE.md) |
+  | License | [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/akchurinda/Fortuna.jl/blob/main/LICENSE.md) |
 </div>
 
 ## Description
@@ -46,11 +46,11 @@ If you have used `Fortuna.jl` package for a scientific publication, please cite 
 
 ## License
 
-`Fortuna.jl` package is distributed under the [MIT license](https://en.wikipedia.org/wiki/MIT_License). More information can be found in the [`LICENSE.md`](https://github.com/AkchurinDA/Fortuna.jl/blob/main/LICENSE.md) file.
+`Fortuna.jl` package is distributed under the [MIT license](https://en.wikipedia.org/wiki/MIT_License). More information can be found in the [`LICENSE.md`](https://github.com/akchurinda/Fortuna.jl/blob/main/LICENSE.md) file.
 
 ## Help and Support
 
-For assistance with the package, please raise an issue on the [GitHub Issues](https://github.com/AkchurinDA/Fortuna.jl/issues) page. Please use the appropriate labels to indicate the specific functionality you are inquiring about. Alternatively, contact the author directly at [AkchurinDA@gmail.com](mailto:AkchurinDA@gmail.com?subject=Fortuna.jl).
+For assistance with the package, please raise an issue on the [GitHub Issues](https://github.com/akchurinda/Fortuna.jl/issues) page. Please use the appropriate labels to indicate the specific functionality you are inquiring about. Alternatively, contact the author directly at [akchurinda@gmail.com](mailto:akchurinda@gmail.com?subject=Fortuna.jl).
 
 ## Acknowledgements
 

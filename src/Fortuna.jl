@@ -5,7 +5,7 @@ module Fortuna
 using Base
 using Distributions
 using FastGaussQuadrature
-using DifferentiationInterface, ForwardDiff, ReverseDiff, FiniteDiff
+using DifferentiationInterface, ADTypes
 using LinearAlgebra
 using NonlinearSolve
 using Random
@@ -20,6 +20,7 @@ using Reexport
 Reexport.@reexport using Distributions: rand, pdf              # Extended functions
 Reexport.@reexport using Distributions: mean, std, cor, params # Useful functions
 Reexport.@reexport using LinearAlgebra: I
+Reexport.@reexport using ADTypes: AutoForwardDiff, AutoReverseDiff, AutoFiniteDiff
 
 # --------------------------------------------------
 # DEFINE ABSTRACT TYPES
@@ -69,13 +70,13 @@ abstract type SORMSubmethod end
 # --------------------------------------------------
 # EXPORT TYPES AND FUNCTIONS
 # --------------------------------------------------
-include("Isoprobabilistic Transformations/NatafTransformation.jl")
-include("Isoprobabilistic Transformations/RosenblattTransformation.jl")
-include("Random Variables/DefineRandomVariables.jl")
-include("Random Variables/SampleRandomVariables.jl")
-include("Reliability Problems/ReliabilityProblems.jl")
-include("InverseReliabilityProblems.jl")
-include("SensitivityProblems.jl")
+include("transf/nataf_transf.jl")
+include("transf/rosen_transf.jl")
+include("rvs/define_rvs.jl")
+include("rvs/sample_rvs.jl")
+include("rel_problems/rel_problems.jl")
+include("inv_rel_problems.jl")
+include("sen_rel_problems.jl")
 export AbstractSamplingTechnique
 export ITS, LHS
 export AbstractTransformation

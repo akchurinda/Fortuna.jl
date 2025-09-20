@@ -9,7 +9,7 @@ bibliography = CitationBibliography(
 
 makedocs(
     sitename = "Fortuna.jl",
-    authors  = "Damir Akchurin, AkchurinDA@gmail.com",
+    authors  = "Damir Akchurin, akchurinda@gmail.com",
     format   = Documenter.HTML(
         assets = [
             "assets/favicon.ico",
@@ -43,4 +43,4 @@ makedocs(
     plugins = [bibliography])
 
 deploydocs(
-    repo = "github.com/AkchurinDA/Fortuna.jl")
+    repo = "github.com/akchurinda/Fortuna.jl")

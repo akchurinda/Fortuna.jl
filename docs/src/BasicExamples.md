@@ -21,10 +21,10 @@ X   = [X_1, X_2]
 ρ_X = [1 -0.75; -0.75 1]
 
 # Perform Nataf Transformation:
-nataf_object = NatafTransformation(X, ρ_X)
+nataf_obj = NatafTransformation(X, ρ_X)
 
 # Generate 10000 samples of random vector in X-, Z-, and U-spaces using Latin Hypercube Sampling technique:
-X_samples, U_samples, Z_samples = rand(nataf_object, 10000, :LHS)
+X_samples, U_samples, Z_samples = rand(nataf_obj, 10000, :LHS)
 
 nothing # hide
 ```
@@ -37,7 +37,7 @@ nothing # hide
 # Compute joint PDF of random vector:
 x_range_1  = range(0, 20, 500)
 x_range_2  = range(5, 25, 500)
-f_samples  = [pdf(nataf_object, [x_1, x_2]) for x_1 in x_range_1, x_2 in x_range_2]
+f_samples  = [pdf(nataf_obj, [x_1, x_2]) for x_1 in x_range_1, x_2 in x_range_2]
 
 nothing # hide
 ```
@@ -174,12 +174,12 @@ problem = ReliabilityProblem(X, ρ_X, g)
 # Perform reliability analysis using Curve-Fitting (CF) method:
 solution = solve(problem, SORM(CF()))
 println("SORM:")
-println("β from FORM: $(solution.FORMSolution.β)")
-println("β from SORM: $(solution.β₂[1]) (Hohenbichler and Rackwitz)")
-println("β from SORM: $(solution.β₂[2]) (Breitung)")
-println("PoF from FORM: $(solution.FORMSolution.PoF)")
-println("PoF from SORM: $(solution.PoF₂[1]) (Hohenbichler and Rackwitz)")
-println("PoF from SORM: $(solution.PoF₂[2]) (Breitung)")
+println("β from FORM: $(solution.form_solution.β)")
+println("β from SORM: $(solution.β_2[1]) (Hohenbichler and Rackwitz)")
+println("β from SORM: $(solution.β_2[2]) (Breitung)")
+println("PoF from FORM: $(solution.form_solution.PoF)")
+println("PoF from SORM: $(solution.PoF_2[1]) (Hohenbichler and Rackwitz)")
+println("PoF from SORM: $(solution.PoF_2[2]) (Breitung)")
 ```
 
 ### Point-Fitting Method
@@ -188,12 +188,12 @@ println("PoF from SORM: $(solution.PoF₂[2]) (Breitung)")
 # Perform reliability analysis using point-fitting SORM:
 solution = solve(problem, SORM(PF()))
 println("SORM:")
-println("β from FORM: $(solution.FORMSolution.β)")
-println("β from SORM: $(solution.β₂[1]) (Hohenbichler and Rackwitz)")
-println("β from SORM: $(solution.β₂[2]) (Breitung)")
-println("PoF from FORM: $(solution.FORMSolution.PoF)")
-println("PoF from SORM: $(solution.PoF₂[1]) (Hohenbichler and Rackwitz)")
-println("PoF from SORM: $(solution.PoF₂[2]) (Breitung)")
+println("β from FORM: $(solution.form_solution.β)")
+println("β from SORM: $(solution.β_2[1]) (Hohenbichler and Rackwitz)")
+println("β from SORM: $(solution.β_2[2]) (Breitung)")
+println("PoF from FORM: $(solution.form_solution.PoF)")
+println("PoF from SORM: $(solution.PoF_2[1]) (Hohenbichler and Rackwitz)")
+println("PoF from SORM: $(solution.PoF_2[2]) (Breitung)")
 ```
 
 ## Subset Simulation Method

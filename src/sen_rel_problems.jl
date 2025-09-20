@@ -52,16 +52,16 @@ struct SensitivityProblemCache
 end
 
 """
-    solve(Problem::SensitivityProblemTypeI; backend = AutoForwardDiff())
+    solve(problem::SensitivityProblemTypeI; backend = AutoForwardDiff())
 
 Function used to solve sensitivity problems of type I (sensitivities w.r.t. the parameters of the limit state function).
 """
-function solve(Problem::SensitivityProblemTypeI; backend = AutoForwardDiff())
+function solve(problem::SensitivityProblemTypeI; backend = AutoForwardDiff())
     # Extract the problem data:
-    X  = Problem.X
-    ρ_X = Problem.ρ_X
-    g  = Problem.g
-    Θ  = Problem.Θ
+    X  = problem.X
+    ρ_X = problem.ρ_X
+    g  = problem.g
+    Θ  = problem.Θ
 
     # Define a reliability problem for the FORM analysis:
     g₁(x) = g(x, Θ)
@@ -94,16 +94,16 @@ function solve(Problem::SensitivityProblemTypeI; backend = AutoForwardDiff())
 end
 
 """
-    solve(Problem::SensitivityProblemTypeII; backend = AutoForwardDiff())
+    solve(problem::SensitivityProblemTypeII; backend = AutoForwardDiff())
 
 Function used to solve sensitivity problems of type II (sensitivities w.r.t. the parameters of the random vector).
 """
-function solve(Problem::SensitivityProblemTypeII; backend = AutoForwardDiff())
+function solve(problem::SensitivityProblemTypeII; backend = AutoForwardDiff())
     # Extract the problem data:
-    X  = Problem.X
-    ρ_X = Problem.ρ_X
-    g  = Problem.g
-    Θ  = Problem.Θ
+    X  = problem.X
+    ρ_X = problem.ρ_X
+    g  = problem.g
+    Θ  = problem.Θ
 
     # Define a reliability problem for the FORM analysis:
     form_problem = ReliabilityProblem(X(Θ), ρ_X, g)

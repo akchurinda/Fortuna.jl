@@ -6,12 +6,12 @@ using PyCall
 ops = pyimport("openseespy.opensees")
 
 # Define the random variables:
-X₁ = randomvariable("Normal", "M", [29000, 0.05 * 29000]) # Young's modulus
-X₂ = randomvariable("Normal", "M", [  110, 0.05 *   110]) # Moment of inertia about major-axis
-X  = [X₁, X₂]
+X_1 = randomvariable("Normal", "M", [29000, 0.05 * 29000]) # Young's modulus
+X_2 = randomvariable("Normal", "M", [  110, 0.05 *   110]) # Moment of inertia about major-axis
+X  = [X_1, X_2]
 
 # Define the correlation matrix:
-ρˣ = [1 0; 0 1]
+ρ_X = [1 0; 0 1]
 
 # Define the limit state function:
 function g(x::Vector)
@@ -93,16 +93,16 @@ function g(x::Vector)
 end
 
 # Define the reliability problem:
-Problem = ReliabilityProblem(X, ρˣ, g)
+problem = ReliabilityProblem(X, ρ_X, g)
 
 # Perform the reliability analysis using the FORM:
-Solution = solve(Problem, FORM(), diff = :numeric)
+solution = solve(problem, FORM(), backend = AutoFiniteDiff())
 println("FORM:")
-println("β:   $(Solution.β)  ")
-println("PoF: $(Solution.PoF)")
+println("β:   $(solution.β)  ")
+println("PoF: $(solution.PoF)")
 
 # Perform the reliability analysis using the SORM:
-Solution = solve(Problem, SORM(), diff = :numeric)
+solution = solve(problem, SORM(), backend = AutoFiniteDiff())
 println("SORM:")
-println("β:   $(Solution.β₂)  ")
-println("PoF: $(Solution.PoF₂)")
+println("β:   $(solution.β_2)  ")
+println("PoF: $(solution.PoF_2)")

@@ -91,13 +91,13 @@ function getdistortedcorrelation(X::AbstractVector{<:Distributions.ContinuousUni
 
             # Compute the entries of the correlation matrix of the distorted correlation matrix:
             try
-                Problem  = NonlinearSolve.NonlinearProblem(F, ρ_X[i, j])
-                Solution = NonlinearSolve.solve(Problem, nothing)
-                ρ_Z[i, j] = Solution.u
+                problem  = NonlinearSolve.NonlinearProblem(F, ρ_X[i, j])
+                solution = NonlinearSolve.solve(problem, nothing)
+                ρ_Z[i, j] = solution.u
             catch
-                Problem  = NonlinearSolve.IntervalNonlinearProblem(F, (-(1 - 1E-3), +(1 - 1E-3)))
-                Solution = NonlinearSolve.solve(Problem, nothing)
-                ρ_Z[i, j] = Solution.u
+                problem  = NonlinearSolve.IntervalNonlinearProblem(F, (-(1 - 1E-3), +(1 - 1E-3)))
+                solution = NonlinearSolve.solve(problem, nothing)
+                ρ_Z[i, j] = solution.u
             end
             ρ_Z[j, i] = ρ_Z[i, j]
         end

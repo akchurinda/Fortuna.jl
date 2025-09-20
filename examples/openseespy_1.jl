@@ -6,15 +6,15 @@ using PyCall
 ops = pyimport("openseespy.opensees")
 
 # Define the random vector:
-t₁ = randomvariable("Normal", "M", [   20,    20 * 0.01])
-t₂ = randomvariable("Normal", "M", [   50,    50 * 0.01])
-P₁ = randomvariable("Gumbel", "M", [20000, 20000 * 0.01])
-P₂ = randomvariable("Gumbel", "M", [20000, 20000 * 0.01])
-P₃ = randomvariable("Gumbel", "M", [20000, 20000 * 0.01])
-X  = [t₁, t₂, P₁, P₂, P₃]
+t_1 = randomvariable("Normal", "M", [   20,    20 * 0.01])
+t_2 = randomvariable("Normal", "M", [   50,    50 * 0.01])
+P_1 = randomvariable("Gumbel", "M", [20000, 20000 * 0.01])
+P_2 = randomvariable("Gumbel", "M", [20000, 20000 * 0.01])
+P_3 = randomvariable("Gumbel", "M", [20000, 20000 * 0.01])
+X  = [t_1, t_2, P_1, P_2, P_3]
 
 # Define the correlation matrix:
-ρˣ = [
+ρ_X = [
     1.0 0.5 0.0 0.0 0.0
     0.5 1.0 0.0 0.0 0.0
     0.0 0.0 1.0 0.0 0.0
@@ -72,9 +72,9 @@ function g(x::Vector)
 end
 
 # Define the reliability problem:
-Problem = ReliabilityProblem(X, ρˣ, g)
+problem = ReliabilityProblem(X, ρ_X, g)
 
 # Solve the reliability problem using the FORM:
-Solution = solve(Problem, FORM(), diff = :numeric)
-println("β   = $(Solution.β)  ")
-println("PoF = $(Solution.PoF)")
+solution = solve(problem, FORM(), backend = AutoFiniteDiff())
+println("β   = $(solution.β)  ")
+println("PoF = $(solution.PoF)")

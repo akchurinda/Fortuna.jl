@@ -14,8 +14,8 @@ mutable struct ReliabilityProblem <: AbstractReliabilityProblem
     g::Function
 end
 
-include("MC.jl")
-include("IS.jl")
-include("FORM.jl")
-include("SORM.jl")
-include("SSM.jl")
+include("mc.jl")
+include("is.jl")
+include("form.jl")
+include("sorm.jl")
+include("ssm.jl")

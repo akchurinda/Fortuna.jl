@@ -57,23 +57,23 @@ struct InverseReliabilityProblemCache
 end
 
 """
-    solve(Problem::InverseReliabilityProblem, θ_0::Real; 
+    solve(problem::InverseReliabilityProblem, θ_0::Real; 
         x_0::Union{Nothing, Vector{<:Real}} = nothing, 
         max_num_iters = 250, ϵ₁ = 10E-6, ϵ₂ = 10E-6, ϵ₃ = 10E-3,
         backend = AutoForwardDiff())
 
 Function used to solve inverse reliability problems.
 """
-function solve(Problem::InverseReliabilityProblem, θ_0::Real; 
+function solve(problem::InverseReliabilityProblem, θ_0::Real; 
     max_num_iters = 250, ϵ₁ = 1E-6, ϵ₂ = 1E-6, ϵ₃ = 1E-6,
     x_0::Union{Nothing, Vector{<:Real}} = nothing, 
     c_0::Union{Nothing, Real} = nothing,
     backend = AutoForwardDiff())
     # Extract the problem data:
-    X  = Problem.X
-    ρ_X = Problem.ρ_X
-    g  = Problem.g
-    β  = Problem.β
+    X  = problem.X
+    ρ_X = problem.ρ_X
+    g  = problem.g
+    β  = problem.β
 
     # Compute number of dimensions: 
     num_dims = length(X)

@@ -89,7 +89,7 @@ X = [X_1, X_2]
 nothing # hide
 ```
 
-- Define a correlated matrix (`ρˣ`) for the defined random vector.
+- Define a correlated matrix (`ρ_X`) for the defined random vector.
 
 ```@example sample_rv
 ρ_X = [1 -0.75; -0.75 1]

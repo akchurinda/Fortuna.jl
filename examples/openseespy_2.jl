@@ -123,7 +123,7 @@ X = [
     I_B_1, I_B_2, I_B_3, I_B_4, I_B_5, I_B_6, I_B_7, I_B_8, I_B_9, I_B_10, I_B_11, I_B_12]
 
 # Define the correlation matrix:
-ρˣ = Matrix(1.0 * I, length(X), length(X))
+ρ_X = Matrix(1.0 * I, length(X), length(X))
 
 # Define the limit state function:
 function g(x::Vector)
@@ -250,9 +250,9 @@ function g(x::Vector)
 end
 
 # Define the reliability problem:
-Problem = ReliabilityProblem(X, ρˣ, g)
+problem = ReliabilityProblem(X, ρ_X, g)
 
 # Solve the reliability problem:
-Solution = solve(Problem, FORM(), diff = :numeric)
-println("β   = $(Solution.β)  ")
-println("PoF = $(Solution.PoF)")
+solution = solve(problem, FORM(), backend = AutoFiniteDiff())
+println("β   = $(solution.β)  ")
+println("PoF = $(solution.PoF)")

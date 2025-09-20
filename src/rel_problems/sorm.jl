@@ -75,14 +75,14 @@ struct PFCache # Point-Fitting method
 end
 
 """
-solve(Problem::ReliabilityProblem, AnalysisMethod::SORM; 
+solve(problem::ReliabilityProblem, AnalysisMethod::SORM; 
     form_solution::Union{Nothing, HLRFCache, iHLRFCache} = nothing,
     FORMConfig::FORM = FORM(), 
     backend = AutoForwardDiff())
 
 Function used to solve reliability problems using Second-Order Reliability Method (SORM).
 """
-function solve(Problem::ReliabilityProblem, AnalysisMethod::SORM; 
+function solve(problem::ReliabilityProblem, AnalysisMethod::SORM; 
         form_solution::Union{Nothing, RFCache, HLRFCache, iHLRFCache} = nothing,
         form_config::FORM = FORM(), 
         backend = AutoForwardDiff())
@@ -93,16 +93,16 @@ function solve(Problem::ReliabilityProblem, AnalysisMethod::SORM;
     isa(form_config.submethod, MCFOSM) && throw(ArgumentError("MCFOSM cannot be used with SORM as it does not provide any information about the design point!"))
 
     # Determine the design point using FORM:
-    form_solution = isnothing(form_solution) ? solve(Problem, form_config, backend = backend) : form_solution
+    form_solution = isnothing(form_solution) ? solve(problem, form_config, backend = backend) : form_solution
     u            = form_solution.u[:, end]
     ∇G           = form_solution.∇G[:, end]
     α            = form_solution.α[:, end]
     β_1           = form_solution.β
 
     # Extract the problem data:
-    X  = Problem.X
-    ρ_X = Problem.ρ_X
-    g  = Problem.g
+    X  = problem.X
+    ρ_X = problem.ρ_X
+    g  = problem.g
 
     if !isa(submethod, CF) && !isa(submethod, PF)
         error("Invalid SORM submethod!")

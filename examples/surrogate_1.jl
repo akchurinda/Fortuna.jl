@@ -6,15 +6,15 @@ using PyCall
 ops = pyimport("openseespy.opensees")
 
 # Define the random variables:
-X₁ = randomvariable("Normal", "M", [29000, 0.05 * 29000]) # Young's modulus
-X₂ = randomvariable("Normal", "M", [  110, 0.05 *   110]) # Moment of inertia about major axis
-X  = [X₁, X₂]
+X_1 = randomvariable("Normal", "M", [29000, 0.05 * 29000]) # Young's modulus
+X_2 = randomvariable("Normal", "M", [  110, 0.05 *   110]) # Moment of inertia about major axis
+X  = [X_1, X_2]
 
 # Define the correlation matrix:
-ρˣ = [1 0; 0 1]
+ρ_X = [1 0; 0 1]
 
 # Define the FE model of the cantilever beam:
-function CantileverBeam(x::Vector)
+function beam(x::Vector)
     # Remove any previous models:
     ops.wipe()
 
@@ -84,57 +84,57 @@ function CantileverBeam(x::Vector)
 end
 
 # Define the limit state function:
-g(x::Vector) = 1 - CantileverBeam(x)
+g(x::Vector) = 1 - beam(x)
 
 # Define the reliability problem:
-Problem = ReliabilityProblem(X, ρˣ, g)
+problem = ReliabilityProblem(X, ρ_X, g)
 
 # Perform the reliability analysis using the FORM:
-Solution = solve(Problem, FORM(), diff = :numeric)
+solution = solve(problem, FORM(), backend = AutoFiniteDiff())
 println("FORM:")
-println("β: $(Solution.β)")
-println("PoF: $(Solution.PoF)")
+println("β: $(solution.β)")
+println("PoF: $(solution.PoF)")
 
 # Perform the reliability analysis using the SORM:
-Solution = solve(Problem, SORM(), diff = :numeric)
+solution = solve(problem, SORM(), backend = AutoFiniteDiff())
 println("SORM:")
-println("β: $(Solution.β₂[1]) (Hohenbichler and Rackwitz)")
-println("β: $(Solution.β₂[2]) (Breitung)")
-println("PoF: $(Solution.PoF₂[1]) (Hohenbichler and Rackwitz)")
-println("PoF: $(Solution.PoF₂[2]) (Breitung)")
+println("β: $(solution.β_2[1]) (Hohenbichler and Rackwitz)")
+println("β: $(solution.β_2[2]) (Breitung)")
+println("PoF: $(solution.PoF_2[1]) (Hohenbichler and Rackwitz)")
+println("PoF: $(solution.PoF_2[2]) (Breitung)")
 
 # Preamble:
 using Surrogates
 
 # Define the training points:
-LowerBound = [
+lb = [
     29000 - 6 * 0.05 * 29000,
       110 - 6 * 0.05 *   110]
-UpperBound = [
+ub = [
     29000 + 6 * 0.05 * 29000,
       110 + 6 * 0.05 *   110]
-XTrain = sample(50, LowerBound, UpperBound, SobolSample())
-YTrain = [CantileverBeam([x...]) for x in XTrain]
+x_train = sample(50, lb, ub, SobolSample())
+y_train = [beam([x...]) for x in x_train]
 
 # Fit a Kriging surrogate model to the training points:
-CantileverBeamSurrogate = Kriging(XTrain, YTrain, LowerBound, UpperBound)
+surrogate = Kriging(x_train, y_train, lb, ub)
 
 # Define the limit state function using the surrogate model:
-gSurrogate(x::Vector) = 1 - CantileverBeamSurrogate(x)
+g_surrogate(x::Vector) = 1 - surrogate(x)
 
 # Define the reliability problem:
-Problem = ReliabilityProblem(X, ρˣ, gSurrogate)
+problem = ReliabilityProblem(X, ρ_X, g_surrogate)
 
 # Perform the reliability analysis using the FORM:
-Solution = solve(Problem, FORM())
+solution = solve(problem, FORM())
 println("FORM:")
-println("β: $(Solution.β)")
-println("PoF: $(Solution.PoF)")
+println("β: $(solution.β)")
+println("PoF: $(solution.PoF)")
 
 # Perform the reliability analysis using the SORM:
-Solution = solve(Problem, SORM())
+solution = solve(problem, SORM())
 println("SORM:")
-println("β: $(Solution.β₂[1]) (Hohenbichler and Rackwitz)")
-println("β: $(Solution.β₂[2]) (Breitung)")
-println("PoF: $(Solution.PoF₂[1]) (Hohenbichler and Rackwitz)")
-println("PoF: $(Solution.PoF₂[2]) (Breitung)")
+println("β: $(solution.β_2[1]) (Hohenbichler and Rackwitz)")
+println("β: $(solution.β_2[2]) (Breitung)")
+println("PoF: $(solution.PoF_2[1]) (Hohenbichler and Rackwitz)")
+println("PoF: $(solution.PoF_2[2]) (Breitung)")

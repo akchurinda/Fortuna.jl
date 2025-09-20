@@ -1,5 +1,9 @@
 # News
 
+## Release V0.11.0
+
+- Refactored the entire codebase to use `snake_case` for consistency and clarity.
+
 ## Release V0.10.1
 
 - Fixed a bug which caused the LHS technique to fail when the number samples is large (>1E8).

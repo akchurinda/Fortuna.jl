@@ -69,15 +69,15 @@ solution_2 = solve(problem_2, FORM(HLRF()))
 println(&quot;FORM:&quot;)
 println(&quot;β from g₁: $(solution_1.β)&quot;)
 println(&quot;β from g₂: $(solution_2.β)&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">FORM:
-β from g₁: 2.108339767222278
-β from g₂: 2.108339767221145</code></pre><h3 id="Improved-Hasofer-Lind-Rackwitz-Fiessler-Method"><a class="docs-heading-anchor" href="#Improved-Hasofer-Lind-Rackwitz-Fiessler-Method">Improved Hasofer-Lind-Rackwitz-Fiessler Method</a><a id="Improved-Hasofer-Lind-Rackwitz-Fiessler-Method-1"></a><a class="docs-heading-anchor-permalink" href="#Improved-Hasofer-Lind-Rackwitz-Fiessler-Method" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Perform reliability analysis using improved Hasofer-Lind-Rackwitz-Fiessler (iHLRF) method:
+β from g₁: 2.1083397672222786
+β from g₂: 2.1083397672211452</code></pre><h3 id="Improved-Hasofer-Lind-Rackwitz-Fiessler-Method"><a class="docs-heading-anchor" href="#Improved-Hasofer-Lind-Rackwitz-Fiessler-Method">Improved Hasofer-Lind-Rackwitz-Fiessler Method</a><a id="Improved-Hasofer-Lind-Rackwitz-Fiessler-Method-1"></a><a class="docs-heading-anchor-permalink" href="#Improved-Hasofer-Lind-Rackwitz-Fiessler-Method" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Perform reliability analysis using improved Hasofer-Lind-Rackwitz-Fiessler (iHLRF) method:
 solution_1 = solve(problem_1, FORM(iHLRF()))
 solution_2 = solve(problem_2, FORM(iHLRF()))
 println(&quot;FORM:&quot;)
 println(&quot;β from g₁: $(solution_1.β)&quot;)
 println(&quot;β from g₂: $(solution_2.β)&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">FORM:
-β from g₁: 2.108339767222278
-β from g₂: 2.1083397672221786</code></pre><h2 id="Second-Order-Reliability-Methods"><a class="docs-heading-anchor" href="#Second-Order-Reliability-Methods">Second-Order Reliability Methods</a><a id="Second-Order-Reliability-Methods-1"></a><a class="docs-heading-anchor-permalink" href="#Second-Order-Reliability-Methods" title="Permalink"></a></h2><h3 id="Curve-Fitting-Method"><a class="docs-heading-anchor" href="#Curve-Fitting-Method">Curve-Fitting Method</a><a id="Curve-Fitting-Method-1"></a><a class="docs-heading-anchor-permalink" href="#Curve-Fitting-Method" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Define random vector:
+β from g₁: 2.1083397672222786
+β from g₂: 2.1083397672221795</code></pre><h2 id="Second-Order-Reliability-Methods"><a class="docs-heading-anchor" href="#Second-Order-Reliability-Methods">Second-Order Reliability Methods</a><a id="Second-Order-Reliability-Methods-1"></a><a class="docs-heading-anchor-permalink" href="#Second-Order-Reliability-Methods" title="Permalink"></a></h2><h3 id="Curve-Fitting-Method"><a class="docs-heading-anchor" href="#Curve-Fitting-Method">Curve-Fitting Method</a><a id="Curve-Fitting-Method-1"></a><a class="docs-heading-anchor-permalink" href="#Curve-Fitting-Method" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Define random vector:
 M_1 = randomvariable(&quot;Normal&quot;, &quot;M&quot;, [250, 250 * 0.3])
 M_2 = randomvariable(&quot;Normal&quot;, &quot;M&quot;, [125, 125 * 0.3])
 P   = randomvariable(&quot;Gumbel&quot;, &quot;M&quot;, [2500, 2500 * 0.2])
@@ -105,12 +105,12 @@ println(&quot;β from SORM: $(solution.β_2[2]) (Breitung)&quot;)
 println(&quot;PoF from FORM: $(solution.form_solution.PoF)&quot;)
 println(&quot;PoF from SORM: $(solution.PoF_2[1]) (Hohenbichler and Rackwitz)&quot;)
 println(&quot;PoF from SORM: $(solution.PoF_2[2]) (Breitung)&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SORM:
-β from FORM: 2.4660212074311683
-β from SORM: 2.3410265894532656 (Hohenbichler and Rackwitz)
-β from SORM: 2.3595535851527294 (Breitung)
-PoF from FORM: 0.006831162247313022
-PoF from SORM: 0.0096153987334703 (Hohenbichler and Rackwitz)
-PoF from SORM: 0.009148469088800931 (Breitung)</code></pre><h3 id="Point-Fitting-Method"><a class="docs-heading-anchor" href="#Point-Fitting-Method">Point-Fitting Method</a><a id="Point-Fitting-Method-1"></a><a class="docs-heading-anchor-permalink" href="#Point-Fitting-Method" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Perform reliability analysis using point-fitting SORM:
+β from FORM: 2.466021207431168
+β from SORM: 2.34102658931775 (Hohenbichler and Rackwitz)
+β from SORM: 2.3595535850413185 (Breitung)
+PoF from FORM: 0.006831162247313028
+PoF from SORM: 0.00961539873696044 (Hohenbichler and Rackwitz)
+PoF from SORM: 0.009148469091548015 (Breitung)</code></pre><h3 id="Point-Fitting-Method"><a class="docs-heading-anchor" href="#Point-Fitting-Method">Point-Fitting Method</a><a id="Point-Fitting-Method-1"></a><a class="docs-heading-anchor-permalink" href="#Point-Fitting-Method" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Perform reliability analysis using point-fitting SORM:
 solution = solve(problem, SORM(PF()))
 println(&quot;SORM:&quot;)
 println(&quot;β from FORM: $(solution.form_solution.β)&quot;)
@@ -119,12 +119,12 @@ println(&quot;β from SORM: $(solution.β_2[2]) (Breitung)&quot;)
 println(&quot;PoF from FORM: $(solution.form_solution.PoF)&quot;)
 println(&quot;PoF from SORM: $(solution.PoF_2[1]) (Hohenbichler and Rackwitz)&quot;)
 println(&quot;PoF from SORM: $(solution.PoF_2[2]) (Breitung)&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SORM:
-β from FORM: 2.4660212074311683
+β from FORM: 2.466021207431168
 β from SORM: 2.353666599587308 (Hohenbichler and Rackwitz)
 β from SORM: 2.3692855426563395 (Breitung)
-PoF from FORM: 0.006831162247313022
+PoF from FORM: 0.006831162247313028
 PoF from SORM: 0.009294637847494697 (Hohenbichler and Rackwitz)
-PoF from SORM: 0.008911243869536704 (Breitung)</code></pre><h2 id="Subset-Simulation-Method"><a class="docs-heading-anchor" href="#Subset-Simulation-Method">Subset Simulation Method</a><a id="Subset-Simulation-Method-1"></a><a class="docs-heading-anchor-permalink" href="#Subset-Simulation-Method" title="Permalink"></a></h2><pre><code class="language-julia hljs"># Define random vector:
+PoF from SORM: 0.008911243869536706 (Breitung)</code></pre><h2 id="Subset-Simulation-Method"><a class="docs-heading-anchor" href="#Subset-Simulation-Method">Subset Simulation Method</a><a id="Subset-Simulation-Method-1"></a><a class="docs-heading-anchor-permalink" href="#Subset-Simulation-Method" title="Permalink"></a></h2><pre><code class="language-julia hljs"># Define random vector:
 X_1 = randomvariable(&quot;Normal&quot;, &quot;M&quot;, [0, 1])
 X_2 = randomvariable(&quot;Normal&quot;, &quot;M&quot;, [0, 1])
 X  = [X_1, X_2]
@@ -143,4 +143,4 @@ problem = ReliabilityProblem(X, ρ_X, g)
 solution = solve(problem, SSM())
 println(&quot;SSM:&quot;)
 println(&quot;PoF: $(solution.PoF)&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SSM:
-PoF: 0.0013421634215000002</code></pre><img src="../assets/Examples-SubsetSimulationMethod-1.png" class="center" style="max-height:350px; border-radius:2.5px;"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../SensitivityProblems/">« Sensitivity Problems</a><a class="docs-footer-nextpage" href="../Research/">Research »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Saturday 20 September 2025 21:44">Saturday 20 September 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+PoF: 0.0013421634215000002</code></pre><img src="../assets/Examples-SubsetSimulationMethod-1.png" class="center" style="max-height:350px; border-radius:2.5px;"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../SensitivityProblems/">« Sensitivity Problems</a><a class="docs-footer-nextpage" href="../Research/">Research »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Sunday 21 September 2025 00:32">Sunday 21 September 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

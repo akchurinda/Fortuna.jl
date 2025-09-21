@@ -9,7 +9,7 @@
         # Define a random vector of uncorrelated marginal distributions:
         X_1 = randomvariable("Normal", "M", [0, 1])
         X_2 = randomvariable("Normal", "M", [0, 1])
-        X  = [X_1, X_2]
+        X = [X_1, X_2]
         ρ_X = [1 0; 0 1]
 
         # Define a limit state function:
@@ -22,7 +22,7 @@
         solution = solve(problem, SSM())
 
         # Test the results:
-        @test isapprox(solution.PoF, cdf(Normal(), -β_list[i]), rtol = 0.10)
+        @test isapprox(solution.PoF, cdf(Normal(), -β_list[i]), rtol=0.10)
     end
 end
 
@@ -35,7 +35,7 @@ end
     # Define random vector:
     X_1 = randomvariable("Normal", "M", [0, 1])
     X_2 = randomvariable("Normal", "M", [0, 1])
-    X  = [X_1, X_2]
+    X = [X_1, X_2]
     ρ_X = [1 0; 0 1]
 
     # Define limit state function:
@@ -52,5 +52,5 @@ end
     solution = solve(problem, SSM())
 
     # Test the results:
-    @test isapprox(solution.PoF, 3.53 * 10 ^ (-7), rtol = 0.10)
+    @test isapprox(solution.PoF, 3.53 * 10 ^ (-7), rtol=0.10)
 end

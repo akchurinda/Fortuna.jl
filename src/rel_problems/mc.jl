@@ -33,14 +33,14 @@ end
 
 Function used to solve reliability problems using Monte Carlo (MC) simulations.
 """
-function solve(problem::ReliabilityProblem, analysis_method::MC; showprogressbar = false)
+function solve(problem::ReliabilityProblem, analysis_method::MC; showprogressbar=false)
     # Extract the analysis details:
-    num_sims    = analysis_method.num_sims
+    num_sims = analysis_method.num_sims
     sampling_technique = analysis_method.sampling_technique
 
     # Extract data:
-    g  = problem.g
-    X  = problem.X
+    g = problem.g
+    X = problem.X
     ρ_X = problem.ρ_X
 
     # If the marginal distrbutions are correlated, define a Nataf object:
@@ -55,8 +55,11 @@ function solve(problem::ReliabilityProblem, analysis_method::MC; showprogressbar
 
     # Evaluate the limit state function at the generate samples:
     g_vals = Vector{Float64}(undef, num_sims)
-    ProgressMeter.@showprogress desc = "Evaluating the limit state function..." enabled = showprogressbar for i in axes(samples, 2)
-        g_vals[i] = g(samples[:, i])
+    ProgressMeter.@showprogress desc="Evaluating the limit state function..." enabled=showprogressbar for i in
+                                                                                                          axes(
+        samples, 2
+    )
+        g_vals[i]=g(samples[:, i])
     end
 
     # Compute the probability of failure:

@@ -5,24 +5,24 @@
     # Generate a random vector X with uncorrelated marginal random variables X_1 and X_2:
     X_1 = randomvariable("Gamma", "M", [10, 1.5])
     X_2 = randomvariable("Gamma", "M", [15, 2.5])
-    X  = [X_1, X_2]
+    X = [X_1, X_2]
 
     # Generate samples:
-    num_samples  = 10 ^ 6
+    num_samples = 10 ^ 6
     x_samples_its = rand(X, num_samples, :ITS)
     x_samples_lhs = rand(X, num_samples, :LHS)
 
     # Test the results:
-    @test isapprox(mean(x_samples_its[1, :]),    10,         rtol = 1E-2) # Inverse Transform Sampling
-    @test isapprox(mean(x_samples_its[2, :]),    15,         rtol = 1E-2)
-    @test isapprox(std(x_samples_its[1, :]),     1.5,        rtol = 1E-2)
-    @test isapprox(std(x_samples_its[2, :]),     2.5,        rtol = 1E-2)
-    @test isapprox(cor(x_samples_its, dims = 2), [1 0; 0 1], rtol = 1E-2)
-    @test isapprox(mean(x_samples_lhs[1, :]),    10,         rtol = 1E-2) # Latin Hypercube Sampling
-    @test isapprox(mean(x_samples_lhs[2, :]),    15,         rtol = 1E-2)
-    @test isapprox(std(x_samples_lhs[1, :]),     1.5,        rtol = 1E-2)
-    @test isapprox(std(x_samples_lhs[2, :]),     2.5,        rtol = 1E-2)
-    @test isapprox(cor(x_samples_lhs, dims = 2), [1 0; 0 1], rtol = 1E-2)
+    @test isapprox(mean(x_samples_its[1, :]), 10, rtol=1E-2) # Inverse Transform Sampling
+    @test isapprox(mean(x_samples_its[2, :]), 15, rtol=1E-2)
+    @test isapprox(std(x_samples_its[1, :]), 1.5, rtol=1E-2)
+    @test isapprox(std(x_samples_its[2, :]), 2.5, rtol=1E-2)
+    @test isapprox(cor(x_samples_its, dims=2), [1 0; 0 1], rtol=1E-2)
+    @test isapprox(mean(x_samples_lhs[1, :]), 10, rtol=1E-2) # Latin Hypercube Sampling
+    @test isapprox(mean(x_samples_lhs[2, :]), 15, rtol=1E-2)
+    @test isapprox(std(x_samples_lhs[1, :]), 1.5, rtol=1E-2)
+    @test isapprox(std(x_samples_lhs[2, :]), 2.5, rtol=1E-2)
+    @test isapprox(cor(x_samples_lhs, dims=2), [1 0; 0 1], rtol=1E-2)
 end
 
 @testset "Sampling Techniques #2" begin
@@ -36,28 +36,28 @@ end
         # Generate a random vector X of correlated marginal distributions:
         X_1 = randomvariable("Gamma", "M", [10, 1.5])
         X_2 = randomvariable("Gamma", "M", [15, 2.5])
-        X  = [X_1, X_2]
+        X = [X_1, X_2]
         ρ_X = [1 ρ_list[i]; ρ_list[i] 1]
 
         # Perform Nataf transformation of the correlated marginal random variables:
         nataf_obj = NatafTransformation(X, ρ_X)
 
         # Generate samples:
-        num_samples        = 10 ^ 6
+        num_samples = 10 ^ 6
         x_samples_its, _, _ = rand(nataf_obj, num_samples, :ITS)
         x_samples_lhs, _, _ = rand(nataf_obj, num_samples, :LHS)
 
         # Test the results:
-        @test isapprox(mean(x_samples_its[1, :]),    10,  rtol = 1E-2) # Inverse Transform Sampling
-        @test isapprox(mean(x_samples_its[2, :]),    15,  rtol = 1E-2)
-        @test isapprox(std(x_samples_its[1, :]),     1.5, rtol = 1E-2)
-        @test isapprox(std(x_samples_its[2, :]),     2.5, rtol = 1E-2)
-        @test isapprox(cor(x_samples_its, dims = 2), ρ_X,  rtol = 1E-2)
-        @test isapprox(mean(x_samples_lhs[1, :]),    10,  rtol = 1E-2) # Latin Hypercube Sampling
-        @test isapprox(mean(x_samples_lhs[2, :]),    15,  rtol = 1E-2)
-        @test isapprox(std(x_samples_lhs[1, :]),     1.5, rtol = 1E-2)
-        @test isapprox(std(x_samples_lhs[2, :]),     2.5, rtol = 1E-2)
-        @test isapprox(cor(x_samples_lhs, dims = 2), ρ_X,  rtol = 1E-2)
+        @test isapprox(mean(x_samples_its[1, :]), 10, rtol=1E-2) # Inverse Transform Sampling
+        @test isapprox(mean(x_samples_its[2, :]), 15, rtol=1E-2)
+        @test isapprox(std(x_samples_its[1, :]), 1.5, rtol=1E-2)
+        @test isapprox(std(x_samples_its[2, :]), 2.5, rtol=1E-2)
+        @test isapprox(cor(x_samples_its, dims=2), ρ_X, rtol=1E-2)
+        @test isapprox(mean(x_samples_lhs[1, :]), 10, rtol=1E-2) # Latin Hypercube Sampling
+        @test isapprox(mean(x_samples_lhs[2, :]), 15, rtol=1E-2)
+        @test isapprox(std(x_samples_lhs[1, :]), 1.5, rtol=1E-2)
+        @test isapprox(std(x_samples_lhs[2, :]), 2.5, rtol=1E-2)
+        @test isapprox(cor(x_samples_lhs, dims=2), ρ_X, rtol=1E-2)
     end
 end
 
@@ -65,7 +65,7 @@ end
     # Generate a random vector X of correlated marginal distributions:
     X_1 = randomvariable("Gamma", "M", [10, 1.5])
     X_2 = randomvariable("Gamma", "M", [15, 2.5])
-    X  = [X_1, X_2]
+    X = [X_1, X_2]
     ρ_X = [1 0.75; 0.75 1]
 
     # Perform Nataf transformation of the correlated marginal random variables:

@@ -17,7 +17,6 @@ Type used to perform reliability analysis using Mean-Centered First-Order Second
 $(TYPEDFIELDS)
 """
 struct MCFOSM <: FORMSubmethod # Mean-Centered First-Order Second-Moment method
-
 end
 
 """
@@ -49,7 +48,7 @@ Base.@kwdef struct HLRF <: FORMSubmethod # Hasofer-Lind Rackwitz-Fiessler method
     "convergence criterion #1 ``\\epsilon_{2}``"
     tol_2::Real = 1E-6
     "Starting point ``x_{0}``"
-    x_0::Union{Nothing, Vector{<:Real}} = nothing
+    x_0::Union{Nothing,Vector{<:Real}} = nothing
 end
 
 """
@@ -67,9 +66,9 @@ Base.@kwdef struct iHLRF <: FORMSubmethod # Improved Hasofer-Lind Rackwitz-Fiess
     "convergence criterion #1 ``\\epsilon_{2}``"
     tol_2::Real = 1E-6
     "Starting point ``x_{0}``"
-    x_0::Union{Nothing, Vector{<:Real}} = nothing
+    x_0::Union{Nothing,Vector{<:Real}} = nothing
     "c-coefficient applied at each iteration ``c_{0}``"
-    c_0::Union{Nothing, Real} = nothing
+    c_0::Union{Nothing,Real} = nothing
 end
 
 """
@@ -181,16 +180,19 @@ end
 
 Function used to solve reliability problems using First-Order Reliability Method (FORM).
 """
-function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend = AutoForwardDiff())
+function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend=AutoForwardDiff())
     # Extract the analysis method:
     submethod = AnalysisMethod.submethod
 
     # Extract the problem data:
-    X  = problem.X
+    X = problem.X
     ρ_X = problem.ρ_X
-    g  = problem.g
+    g = problem.g
 
-    if !isa(submethod, MCFOSM) && !isa(submethod, RF) && !isa(submethod, HLRF) && !isa(submethod, iHLRF)
+    if !isa(submethod, MCFOSM) &&
+        !isa(submethod, RF) &&
+        !isa(submethod, HLRF) &&
+        !isa(submethod, iHLRF)
         throw(ArgumentError("Invalid FORM submethod!"))
     elseif isa(submethod, MCFOSM)
         # Compute the means of marginal distrbutions:
@@ -216,22 +218,26 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend = Auto
     elseif isa(submethod, RF)
         # Extract the analysis details:
         max_num_iter = submethod.max_num_iter
-        tol                = submethod.tol
+        tol = submethod.tol
 
         # Error-catching:
-        ρ_X == LinearAlgebra.I || throw(ArgumentError("RF method is only applicable to random vectors with uncorrelated marginals!"))
+        ρ_X == LinearAlgebra.I || throw(
+            ArgumentError(
+                "RF method is only applicable to random vectors with uncorrelated marginals!",
+            ),
+        )
 
         # Compute number of dimensions: 
         num_dims = length(X)
 
         # Preallocate:
-        β  = Vector{Float64}(undef, max_num_iter)
-        x  = Matrix{Float64}(undef, num_dims, max_num_iter)
-        u  = Matrix{Float64}(undef, num_dims, max_num_iter)
-        μ  = Matrix{Float64}(undef, num_dims, max_num_iter)
-        σ  = Matrix{Float64}(undef, num_dims, max_num_iter)
+        β = Vector{Float64}(undef, max_num_iter)
+        x = Matrix{Float64}(undef, num_dims, max_num_iter)
+        u = Matrix{Float64}(undef, num_dims, max_num_iter)
+        μ = Matrix{Float64}(undef, num_dims, max_num_iter)
+        σ = Matrix{Float64}(undef, num_dims, max_num_iter)
         ∇G = Matrix{Float64}(undef, num_dims, max_num_iter)
-        α  = Matrix{Float64}(undef, num_dims, max_num_iter)
+        α = Matrix{Float64}(undef, num_dims, max_num_iter)
         convergence = true
 
         # Initialize the design point in X-space:
@@ -239,38 +245,53 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend = Auto
 
         # Force the design point to lay on the failure boundary:
         function F(u, p)
-            x′              = zeros(eltype(u), num_dims)
+            x′ = zeros(eltype(u), num_dims)
             x′[1:(end - 1)] = p[1:(end - 1)]
-            x′[end]         = u
-        
+            x′[end] = u
+
             return g(x′)
         end
 
-        problem   = NonlinearSolve.NonlinearProblem(F, mean(X[end]), x[:, 1])
+        problem = NonlinearSolve.NonlinearProblem(F, mean(X[end]), x[:, 1])
         x[end, 1] = try
-            solution = NonlinearSolve.solve(problem, nothing, abstol = 1E-9, reltol = 1E-9)
+            solution = NonlinearSolve.solve(problem, nothing; abstol=1E-9, reltol=1E-9)
             solution.u
         catch
-            solution = NonlinearSolve.solve(problem, NonlinearSolve.FastShortcutNonlinearPolyalg(autodiff = AutoFiniteDiff()), abstol = 1E-9, reltol = 1E-9)
+            solution = NonlinearSolve.solve(
+                problem,
+                NonlinearSolve.FastShortcutNonlinearPolyalg(; autodiff=AutoFiniteDiff());
+                abstol=1E-9,
+                reltol=1E-9,
+            )
             solution.u
         end
 
         # Prepare gradient of the limit state function at the initial design point:
         ∇g = similar(x[:, 1])
-        
+
         # Start iterating:
         for i in 1:max_num_iter
             # Compute the mean and standard deviation values of the equivalient normal marginals:
             for j in 1:num_dims
-                σ[j, i] = Distributions.pdf(Distributions.Normal(), Distributions.quantile(Distributions.Normal(), Distributions.cdf(X[j], x[j, i]))) / Distributions.pdf(X[j], x[j, i])
-                μ[j, i] = x[j, i] - σ[j, i] * Distributions.quantile(Distributions.Normal(), Distributions.cdf(X[j], x[j, i]))
+                σ[j, i] =
+                    Distributions.pdf(
+                        Distributions.Normal(),
+                        Distributions.quantile(
+                            Distributions.Normal(), Distributions.cdf(X[j], x[j, i])
+                        ),
+                    ) / Distributions.pdf(X[j], x[j, i])
+                μ[j, i] =
+                    x[j, i] -
+                    σ[j, i] * Distributions.quantile(
+                        Distributions.Normal(), Distributions.cdf(X[j], x[j, i])
+                    )
             end
 
             # Compute the design point in U-space:
             u[:, i] = (x[:, i] - μ[:, i]) ./ σ[:, i]
 
             # Evaluate gradient of the limit state function at the design point in U-space:
-            try 
+            try
                 gradient!(g, ∇g, backend, x[:, i])
             catch
                 gradient!(g, ∇g, AutoFiniteDiff(), x[:, i])
@@ -297,13 +318,13 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend = Auto
                     end
 
                     # Clean up the results:
-                    β  = β[i]
-                    x  = x[:, 1:i]
-                    u  = u[:, 1:i]
-                    μ  = μ[:, 1:i]
-                    σ  = σ[:, 1:i]
+                    β = β[i]
+                    x = x[:, 1:i]
+                    u = u[:, 1:i]
+                    μ = μ[:, 1:i]
+                    σ = σ[:, 1:i]
                     ∇G = ∇G[:, 1:i]
-                    α  = α[:, 1:i]
+                    α = α[:, 1:i]
 
                     # Return results:
                     return RFCache(β, x, u, μ, σ, ∇G, α, convergence)
@@ -322,10 +343,17 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend = Auto
             # Force the design point to lay on the failure boundary:
             problem = NonlinearSolve.NonlinearProblem(F, x[end, i + 1], x[:, i + 1])
             x[end, i + 1] = try
-                solution = NonlinearSolve.solve(problem, nothing, abstol = 1E-9, reltol = 1E-9)
+                solution = NonlinearSolve.solve(problem, nothing; abstol=1E-9, reltol=1E-9)
                 solution.u
             catch
-                solution = NonlinearSolve.solve(problem, NonlinearSolve.FastShortcutNonlinearPolyalg(autodiff = AutoFiniteDiff()), abstol = 1E-9, reltol = 1E-9)
+                solution = NonlinearSolve.solve(
+                    problem,
+                    NonlinearSolve.FastShortcutNonlinearPolyalg(;
+                        autodiff=AutoFiniteDiff()
+                    );
+                    abstol=1E-9,
+                    reltol=1E-9,
+                )
                 solution.u
             end
         end
@@ -340,12 +368,12 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend = Auto
         num_dims = length(X)
 
         # Preallocate:
-        x  = Matrix{Float64}(undef, num_dims, max_num_iter)
-        u  = Matrix{Float64}(undef, num_dims, max_num_iter)
-        G  = Vector{Float64}(undef, max_num_iter)
+        x = Matrix{Float64}(undef, num_dims, max_num_iter)
+        u = Matrix{Float64}(undef, num_dims, max_num_iter)
+        G = Vector{Float64}(undef, max_num_iter)
         ∇G = Matrix{Float64}(undef, num_dims, max_num_iter)
-        α  = Matrix{Float64}(undef, num_dims, max_num_iter)
-        d  = Matrix{Float64}(undef, num_dims, max_num_iter)
+        α = Matrix{Float64}(undef, num_dims, max_num_iter)
+        d = Matrix{Float64}(undef, num_dims, max_num_iter)
         convergence = true
 
         # Perform the Nataf Transformation:
@@ -375,7 +403,7 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend = Auto
             G[i] = g(x[:, i])
 
             # Evaluate gradient of the limit state function at the design point in X-space:
-            try 
+            try
                 gradient!(g, ∇g, backend, x[:, i])
             catch
                 gradient!(g, ∇g, AutoFiniteDiff(), x[:, i])
@@ -388,14 +416,20 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend = Auto
             α[:, i] = -∇G[:, i] / LinearAlgebra.norm(∇G[:, i])
 
             # Compute the search direction:
-            d[:, i] = (G[i] / LinearAlgebra.norm(∇G[:, i]) + LinearAlgebra.dot(α[:, i], u[:, i])) * α[:, i] - u[:, i]
+            d[:, i] =
+                (
+                    G[i] / LinearAlgebra.norm(∇G[:, i]) +
+                    LinearAlgebra.dot(α[:, i], u[:, i])
+                ) * α[:, i] - u[:, i]
 
             # Check for convergance:
             criterion_1 = abs(g(x[:, i]) / G₀) # Check if the limit state function is close to zero.
-            criterion_2 = LinearAlgebra.norm(u[:, i] - LinearAlgebra.dot(α[:, i], u[:, i]) * α[:, i]) # Check if the design point is on the failure boundary.
+            criterion_2 = LinearAlgebra.norm(
+                u[:, i] - LinearAlgebra.dot(α[:, i], u[:, i]) * α[:, i]
+            ) # Check if the design point is on the failure boundary.
             if (criterion_1 < tol_1 && criterion_2 < tol_2) || i == max_num_iter
                 # Check for convergance:
-                if i == max_num_iter  
+                if i == max_num_iter
                     @warn """
                     HL-RF method did not converge in the given maximum number of iterations (max_num_iter = $max_num_iter)!
                     Try increasing the maximum number of iterations (max_num_iter) or relaxing the convergance criteria (tol_1, tol_2)!
@@ -412,15 +446,18 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend = Auto
 
                 # Compute the importance vector:
                 L_inv = nataf_obj.L_inv
-                γ   = vec((LinearAlgebra.transpose(α[:, i]) * L_inv) / LinearAlgebra.norm(LinearAlgebra.transpose(α[:, i]) * L_inv))
+                γ = vec(
+                    (LinearAlgebra.transpose(α[:, i]) * L_inv) /
+                    LinearAlgebra.norm(LinearAlgebra.transpose(α[:, i]) * L_inv),
+                )
 
                 # Clean up the results:
-                x  = x[:, 1:i]
-                u  = u[:, 1:i]
-                G  = G[1:i]
+                x = x[:, 1:i]
+                u = u[:, 1:i]
+                G = G[1:i]
                 ∇G = ∇G[:, 1:i]
-                α  = α[:, 1:i]
-                d  = d[:, 1:i]
+                α = α[:, 1:i]
+                d = d[:, 1:i]
 
                 # Return results:
                 return HLRFCache(β, PoF, x, u, G, ∇G, α, d, γ, convergence)
@@ -447,15 +484,15 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend = Auto
         num_dims = length(X)
 
         # Preallocate:
-        x  = Matrix{Float64}(undef, num_dims, max_num_iter)
-        u  = Matrix{Float64}(undef, num_dims, max_num_iter)
-        G  = Vector{Float64}(undef, max_num_iter)
+        x = Matrix{Float64}(undef, num_dims, max_num_iter)
+        u = Matrix{Float64}(undef, num_dims, max_num_iter)
+        G = Vector{Float64}(undef, max_num_iter)
         ∇G = Matrix{Float64}(undef, num_dims, max_num_iter)
-        α  = Matrix{Float64}(undef, num_dims, max_num_iter)
-        d  = Matrix{Float64}(undef, num_dims, max_num_iter)
-        c  = Vector{Float64}(undef, max_num_iter - 1)
-        m  = Vector{Float64}(undef, max_num_iter - 1)
-        λ  = Vector{Float64}(undef, max_num_iter - 1)
+        α = Matrix{Float64}(undef, num_dims, max_num_iter)
+        d = Matrix{Float64}(undef, num_dims, max_num_iter)
+        c = Vector{Float64}(undef, max_num_iter - 1)
+        m = Vector{Float64}(undef, max_num_iter - 1)
+        λ = Vector{Float64}(undef, max_num_iter - 1)
         convergence = true
 
         # Perform the Nataf Transformation:
@@ -482,7 +519,7 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend = Auto
             G[i] = g(x[:, i])
 
             # Evaluate gradient of the limit state function at the design point in X-space:
-            try 
+            try
                 gradient!(g, ∇g, backend, x[:, i])
             catch
                 gradient!(g, ∇g, AutoFiniteDiff(), x[:, i])
@@ -495,14 +532,20 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend = Auto
             α[:, i] = -∇G[:, i] / LinearAlgebra.norm(∇G[:, i])
 
             # Compute the search direction:
-            d[:, i] = (G[i] / LinearAlgebra.norm(∇G[:, i]) + LinearAlgebra.dot(α[:, i], u[:, i])) * α[:, i] - u[:, i]
+            d[:, i] =
+                (
+                    G[i] / LinearAlgebra.norm(∇G[:, i]) +
+                    LinearAlgebra.dot(α[:, i], u[:, i])
+                ) * α[:, i] - u[:, i]
 
             # Check for convergance:
             criterion_1 = abs(g(x[:, i]) / G₀) # Check if the limit state function is close to zero.
-            criterion_2 = LinearAlgebra.norm(u[:, i] - LinearAlgebra.dot(α[:, i], u[:, i]) * α[:, i]) # Check if the design point is on the failure boundary.
+            criterion_2 = LinearAlgebra.norm(
+                u[:, i] - LinearAlgebra.dot(α[:, i], u[:, i]) * α[:, i]
+            ) # Check if the design point is on the failure boundary.
             if (criterion_1 < tol_1 && criterion_2 < tol_2) || i == max_num_iter
                 # Check for convergance:
-                if i == max_num_iter  
+                if i == max_num_iter
                     @warn """
                     iHL-RF method did not converge in the given maximum number of iterations (max_num_iter = $max_num_iter)!
                     Try increasing the maximum number of iterations (max_num_iter) or relaxing the convergance criteria (tol_1, tol_2)!
@@ -519,18 +562,21 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend = Auto
 
                 # Compute the importance vector:
                 L_inv = nataf_obj.L_inv
-                γ   = vec((LinearAlgebra.transpose(α[:, i]) * L_inv) / LinearAlgebra.norm(LinearAlgebra.transpose(α[:, i]) * L_inv))
+                γ = vec(
+                    (LinearAlgebra.transpose(α[:, i]) * L_inv) /
+                    LinearAlgebra.norm(LinearAlgebra.transpose(α[:, i]) * L_inv),
+                )
 
                 # Clean up the results:
-                x  = x[:, 1:i]
-                u  = u[:, 1:i]
-                G  = G[1:i]
+                x = x[:, 1:i]
+                u = u[:, 1:i]
+                G = G[1:i]
                 ∇G = ∇G[:, 1:i]
-                α  = α[:, 1:i]
-                d  = d[:, 1:i]
-                c  = c[1:(i - 1)]
-                m  = m[1:(i - 1)]
-                λ  = λ[1:(i - 1)]
+                α = α[:, 1:i]
+                d = d[:, 1:i]
+                c = c[1:(i - 1)]
+                m = m[1:(i - 1)]
+                λ = λ[1:(i - 1)]
 
                 # Return results:
                 return iHLRFCache(β, PoF, x, u, G, ∇G, α, d, c, m, λ, γ, convergence)
@@ -540,11 +586,15 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend = Auto
             end
 
             # Compute the c-coefficient:
-            c[i] = isnothing(c_0) ? 2 * LinearAlgebra.norm(u[:, i]) / LinearAlgebra.norm(∇G[:, i]) + 10 : c_0
+            c[i] = if isnothing(c_0)
+                2 * LinearAlgebra.norm(u[:, i]) / LinearAlgebra.norm(∇G[:, i]) + 10
+            else
+                c_0
+            end
 
             # Compute the merit function at the current design point:
             m[i] = 0.5 * LinearAlgebra.norm(u[:, i]) ^ 2 + c[i] * abs(G[i])
-            
+
             # Find a step size that satisfies m(uᵢ + λᵢdᵢ) < m(uᵢ):
             λ_t = 1
             u_t = u[:, i] + λ_t * d[:, i]

@@ -8,7 +8,7 @@
 
         rvs = [randomvariable("Exponential", "M", moments[i, :]) for i in axes(moments, 1)]
 
-        @test isapprox(hcat(mean.(rvs), std.(rvs)), moments, rtol = 10 ^ (-9))
+        @test isapprox(hcat(mean.(rvs), std.(rvs)), moments, rtol=10 ^ (-9))
     end
 
     @testset "Frechet" begin
@@ -24,7 +24,7 @@
 
         rvs = [randomvariable("Frechet", "M", moments[i, :]) for i in axes(moments, 1)]
 
-        @test isapprox(hcat(mean.(rvs), std.(rvs)), moments, rtol = 10 ^ (-9))
+        @test isapprox(hcat(mean.(rvs), std.(rvs)), moments, rtol=10 ^ (-9))
     end
 
     @testset "Gamma" begin
@@ -40,7 +40,7 @@
 
         rvs = [randomvariable("Gamma", "M", moments[i, :]) for i in axes(moments, 1)]
 
-        @test isapprox(hcat(mean.(rvs), std.(rvs)), moments, rtol = 10 ^ (-9))
+        @test isapprox(hcat(mean.(rvs), std.(rvs)), moments, rtol=10 ^ (-9))
     end
 
     @testset "Gumbel" begin
@@ -56,11 +56,11 @@
 
         rvs = [randomvariable("Gumbel", "M", moments[i, :]) for i in axes(moments, 1)]
 
-        @test isapprox(hcat(mean.(rvs), std.(rvs)), moments, rtol = 10 ^ (-9))
+        @test isapprox(hcat(mean.(rvs), std.(rvs)), moments, rtol=10 ^ (-9))
     end
 
     @testset "LogNormal" begin
-        μ = 1:10    
+        μ = 1:10
         σ = 0.1:0.1:1
         moments = zeros(length(μ) * length(σ), 2)
         for i in eachindex(μ)
@@ -72,9 +72,9 @@
 
         rvs = [randomvariable("LogNormal", "M", moments[i, :]) for i in axes(moments, 1)]
 
-        @test isapprox(hcat(mean.(rvs), std.(rvs)), moments, rtol = 10 ^ (-9))
+        @test isapprox(hcat(mean.(rvs), std.(rvs)), moments, rtol=10 ^ (-9))
     end
-    
+
     @testset "Normal" begin
         μ = 1:10
         σ = 0.1:0.1:1
@@ -88,7 +88,7 @@
 
         rvs = [randomvariable("Normal", "M", moments[i, :]) for i in axes(moments, 1)]
 
-        @test isapprox(hcat(mean.(rvs), std.(rvs)), moments, rtol = 10 ^ (-9))
+        @test isapprox(hcat(mean.(rvs), std.(rvs)), moments, rtol=10 ^ (-9))
     end
 
     @testset "Poisson" begin
@@ -100,7 +100,7 @@
 
         rvs = [randomvariable("Poisson", "M", moments[i, :]) for i in axes(moments, 1)]
 
-        @test isapprox(hcat(mean.(rvs), std.(rvs)), moments, rtol = 10 ^ (-9))
+        @test isapprox(hcat(mean.(rvs), std.(rvs)), moments, rtol=10 ^ (-9))
     end
 
     @testset "Uniform" begin
@@ -116,7 +116,7 @@
 
         rvs = [randomvariable("Uniform", "M", moments[i, :]) for i in axes(moments, 1)]
 
-        @test isapprox(hcat(mean.(rvs), std.(rvs)), moments, rtol = 10 ^ (-9))
+        @test isapprox(hcat(mean.(rvs), std.(rvs)), moments, rtol=10 ^ (-9))
     end
 
     @testset "Weibull" begin
@@ -132,6 +132,6 @@
 
         rvs = [randomvariable("Weibull", "M", moments[i, :]) for i in axes(moments, 1)]
 
-        @test isapprox(hcat(mean.(rvs), std.(rvs)), moments, rtol = 10 ^ (-9))
+        @test isapprox(hcat(mean.(rvs), std.(rvs)), moments, rtol=10 ^ (-9))
     end
 end

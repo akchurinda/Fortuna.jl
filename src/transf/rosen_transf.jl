@@ -5,7 +5,5 @@ Type used to perform Rosenblatt Transformation.
 
 $(TYPEDFIELDS)
 """
-mutable struct RosenblattTransformation <: AbstractIsoprobabilisticTransformation
-
-end
+mutable struct RosenblattTransformation <: AbstractIsoprobabilisticTransformation end
 Base.broadcastable(x::RosenblattTransformation) = Ref(x)

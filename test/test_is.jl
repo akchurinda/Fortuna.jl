@@ -9,7 +9,7 @@
         # Define a random vector of correlated marginal distributions:
         X_1 = randomvariable("Normal", "M", [0, 1])
         X_2 = randomvariable("Normal", "M", [0, 1])
-        X  = [X_1, X_2]
+        X = [X_1, X_2]
         ρ_X = [1 0; 0 1]
 
         # Define a limit state function:
@@ -20,9 +20,9 @@
 
         # Perform the reliability analysis using Importance Sampling method:
         q = MvNormal([β_list[i] / sqrt(2), β_list[i] / sqrt(2)], [1 0; 0 1])
-        solution    = solve(problem, IS(q, 10 ^ 6))
+        solution = solve(problem, IS(q, 10 ^ 6))
 
         # Test the results:
-        @test isapprox(solution.PoF, cdf(Normal(), -β_list[i]), rtol = 5E-2)
+        @test isapprox(solution.PoF, cdf(Normal(), -β_list[i]), rtol=5E-2)
     end
 end

@@ -9,11 +9,11 @@ mutable struct InverseReliabilityProblem <: AbstractReliabilityProblem
     "Random vector ``\\vec{X}``"
     X::AbstractVector{<:Distributions.UnivariateDistribution}
     "Correlation matrix ``\\rho^{X}``"
-    ρ_X ::AbstractMatrix{<:Real}
+    ρ_X::AbstractMatrix{<:Real}
     "Limit state function ``g(\\vec{X}, \\theta)``"
-    g  ::Function
+    g::Function
     "Target reliability index ``\\beta_t``"
-    β  ::Real
+    β::Real
 end
 
 """
@@ -59,41 +59,47 @@ end
 """
     solve(problem::InverseReliabilityProblem, θ_0::Real; 
         x_0::Union{Nothing, Vector{<:Real}} = nothing, 
-        max_num_iters = 250, ϵ₁ = 10E-6, ϵ₂ = 10E-6, ϵ₃ = 10E-3,
+        max_num_iters = 250, tol_1 = 10E-6, tol_2 = 10E-6, tol_3 = 10E-3,
         backend = AutoForwardDiff())
 
 Function used to solve inverse reliability problems.
 """
-function solve(problem::InverseReliabilityProblem, θ_0::Real; 
-    max_num_iters = 250, ϵ₁ = 1E-6, ϵ₂ = 1E-6, ϵ₃ = 1E-6,
-    x_0::Union{Nothing, Vector{<:Real}} = nothing, 
-    c_0::Union{Nothing, Real} = nothing,
-    backend = AutoForwardDiff())
+function solve(
+    problem::InverseReliabilityProblem,
+    θ_0::Real;
+    max_num_iters=250,
+    tol_1=1E-6,
+    tol_2=1E-6,
+    tol_3=1E-6,
+    x_0::Union{Nothing,Vector{<:Real}}=nothing,
+    c_0::Union{Nothing,Real}=nothing,
+    backend=AutoForwardDiff(),
+)
     # Extract the problem data:
-    X  = problem.X
+    X = problem.X
     ρ_X = problem.ρ_X
-    g  = problem.g
-    β  = problem.β
+    g = problem.g
+    β = problem.β
 
     # Compute number of dimensions: 
     num_dims = length(X)
 
     # Preallocate:
-    x   = Matrix{Float64}(undef, num_dims, max_num_iters)
-    u   = Matrix{Float64}(undef, num_dims, max_num_iters)
-    θ   = Vector{Float64}(undef, max_num_iters)
-    G   = Vector{Float64}(undef, max_num_iters)
+    x = Matrix{Float64}(undef, num_dims, max_num_iters)
+    u = Matrix{Float64}(undef, num_dims, max_num_iters)
+    θ = Vector{Float64}(undef, max_num_iters)
+    G = Vector{Float64}(undef, max_num_iters)
     ∇G_u = Matrix{Float64}(undef, num_dims, max_num_iters)
     ∇G_θ = Vector{Float64}(undef, max_num_iters)
-    α   = Matrix{Float64}(undef, num_dims, max_num_iters)
-    du  = Matrix{Float64}(undef, num_dims, max_num_iters)
-    dθ  = Vector{Float64}(undef, max_num_iters)
-    c_1  = Vector{Float64}(undef, max_num_iters)
-    c_2  = Vector{Float64}(undef, max_num_iters)
-    m_1  = Vector{Float64}(undef, max_num_iters)
-    m_2  = Vector{Float64}(undef, max_num_iters)
-    m   = Vector{Float64}(undef, max_num_iters)
-    λ   = Vector{Float64}(undef, max_num_iters)
+    α = Matrix{Float64}(undef, num_dims, max_num_iters)
+    du = Matrix{Float64}(undef, num_dims, max_num_iters)
+    dθ = Vector{Float64}(undef, max_num_iters)
+    c_1 = Vector{Float64}(undef, max_num_iters)
+    c_2 = Vector{Float64}(undef, max_num_iters)
+    m_1 = Vector{Float64}(undef, max_num_iters)
+    m_2 = Vector{Float64}(undef, max_num_iters)
+    m = Vector{Float64}(undef, max_num_iters)
+    λ = Vector{Float64}(undef, max_num_iters)
 
     # Perform the Nataf Transformation:
     nataf_obj = NatafTransformation(X, ρ_X)
@@ -125,40 +131,52 @@ function solve(problem::InverseReliabilityProblem, θ_0::Real;
 
         # Evaluate gradients of the limit state function at the design point in X-space:
         ∇g_x = try
-            local ∇g_x(x, θ) = LinearAlgebra.transpose(gradient(Unknown -> g(Unknown, θ), backend, x))
+            local function ∇g_x(x, θ)
+                LinearAlgebra.transpose(gradient(unknown -> g(unknown, θ), backend, x))
+            end
             ∇g_x(x[:, i], θ[i])
         catch
-            local ∇g_x(x, θ) = LinearAlgebra.transpose(gradient(Unknown -> g(Unknown, θ), AutoFiniteDiff(), x))
+            local function ∇g_x(x, θ)
+                LinearAlgebra.transpose(gradient(unknown -> g(unknown, θ), AutoFiniteDiff(), x))
+            end
             ∇g_x(x[:, i], θ[i])
         end
 
         ∇g_θ = try
-            local ∇g_θ(x, θ) = derivative(Unknown -> g(x, Unknown), backend, θ)
+            local ∇g_θ(x, θ) = derivative(unknown -> g(x, unknown), backend, θ)
             ∇g_θ(x[:, i], θ[i])
         catch
-            local ∇g_θ(x, θ) = derivative(Unknown -> g(x, Unknown), AutoFiniteDiff(), θ)
+            local ∇g_θ(x, θ) = derivative(unknown -> g(x, unknown), AutoFiniteDiff(), θ)
             ∇g_θ(x[:, i], θ[i])
         end
 
         # Convert the evaluated gradients of the limit state function from X- to U-space:
         ∇G_u[:, i] = vec(∇g_x * J_x_to_u)
-        ∇G_θ[i]    = ∇g_θ
+        ∇G_θ[i] = ∇g_θ
 
         # Compute the normalized negative gradient vector at the design point in U-space:
         α[:, i] = -∇G_u[:, i] / LinearAlgebra.norm(∇G_u[:, i])
 
         # Compute the c-coefficients:
-        c_1[i] = isnothing(c_0) ? 2 * LinearAlgebra.norm(u[:, i]) / LinearAlgebra.norm(∇G_u[:, i]) + 10 : c_0
+        c_1[i] = if isnothing(c_0)
+            2 * LinearAlgebra.norm(u[:, i]) / LinearAlgebra.norm(∇G_u[:, i]) + 10
+        else
+            c_0
+        end
         c_2[i] = 1
 
         # Compute the merit functions at the current design point:
         m_1[i] = 0.5 * LinearAlgebra.norm(u[:, i]) ^ 2 + c_1[i] * abs(G[i])
         m_2[i] = 0.5 * c_2[i] * (LinearAlgebra.norm(u[:, i]) - β) ^ 2
-        m[i]  = m_1[i] + m_2[i]
+        m[i] = m_1[i] + m_2[i]
 
         # Compute the search directions:
         du[:, i] = β * α[:, i] - u[:, i]
-        dθ[i]    = (LinearAlgebra.norm(∇G_u[:, i]) / ∇G_θ[i]) * (β - LinearAlgebra.dot(α[:, i], u[:, i]) - G[i] / LinearAlgebra.norm(∇G_u[:, i]))
+        dθ[i] =
+            (LinearAlgebra.norm(∇G_u[:, i]) / ∇G_θ[i]) * (
+                β - LinearAlgebra.dot(α[:, i], u[:, i]) -
+                G[i] / LinearAlgebra.norm(∇G_u[:, i])
+            )
 
         # Find a step size that satisfies m(uᵢ + λᵢdᵢ) < m(uᵢ):
         λ_t = 1
@@ -168,7 +186,7 @@ function solve(problem::InverseReliabilityProblem, θ_0::Real;
         G_t = g(x_t, θ_t)
         m_1_t = 0.5 * LinearAlgebra.norm(u_t) ^ 2 + c_1[i] * abs(G_t)
         m_2_t = 0.5 * c_2[i] * (LinearAlgebra.norm(u[:, i]) - β) ^ 2
-        m_t  = m_1_t + m_2_t
+        m_t = m_1_t + m_2_t
         while m_t > m[i]
             # Update the step size:
             λ_t = λ_t / 2
@@ -195,36 +213,46 @@ function solve(problem::InverseReliabilityProblem, θ_0::Real;
 
         # Check for convergance:
         criterion_1 = abs(g(x[:, i], θ[i]) / G₀) # Check if the limit state function is close to zero.
-        criterion_2 = LinearAlgebra.norm(u[:, i] - LinearAlgebra.dot(α[:, i], u[:, i]) * α[:, i]) # Check if the design point is on the failure boundary.
-        criterion_3 = LinearAlgebra.norm(u[:, i + 1] - u[:, i]) / LinearAlgebra.norm(u[:, i]) 
-                   + abs(θ[i + 1] - θ[i]) / abs(θ[i]) 
-                   + abs(LinearAlgebra.dot(α[:, i], u[:, i]) - β) / β # Check if the solution has converged.
-        if criterion_1 < ϵ₁ && criterion_2 < ϵ₂ && criterion_3 < ϵ₃ && i != max_num_iters
+        criterion_2 = LinearAlgebra.norm(
+            u[:, i] - LinearAlgebra.dot(α[:, i], u[:, i]) * α[:, i]
+        ) # Check if the design point is on the failure boundary.
+        criterion_3 =
+            LinearAlgebra.norm(u[:, i + 1] - u[:, i]) / LinearAlgebra.norm(u[:, i])
+        + abs(θ[i + 1] - θ[i]) / abs(θ[i])
+        + abs(LinearAlgebra.dot(α[:, i], u[:, i]) - β) / β # Check if the solution has converged.
+        if criterion_1 < tol_1 &&
+            criterion_2 < tol_2 &&
+            criterion_3 < tol_3 &&
+            i != max_num_iters
             # Clean up the results:
-            x   = x[:, 1:i]
-            u   = u[:, 1:i]
-            θ   = θ[1:i]
-            G   = G[1:i]
+            x = x[:, 1:i]
+            u = u[:, 1:i]
+            θ = θ[1:i]
+            G = G[1:i]
             ∇G_u = ∇G_u[:, 1:i]
             ∇G_θ = ∇G_θ[1:i]
-            α   = α[:, 1:i]
-            du  = du[:, 1:i]
-            dθ  = dθ[1:i]
-            c_1  = c_1[1:i]
-            c_2  = c_2[1:i]
-            m_1  = m_1[1:i]
-            m_2  = m_2[1:i]
-            m   = m[1:i]
-            λ   = λ[1:i]
-            
+            α = α[:, 1:i]
+            du = du[:, 1:i]
+            dθ = dθ[1:i]
+            c_1 = c_1[1:i]
+            c_2 = c_2[1:i]
+            m_1 = m_1[1:i]
+            m_2 = m_2[1:i]
+            m = m[1:i]
+            λ = λ[1:i]
+
             # Return results:
-            return InverseReliabilityProblemCache(x, u, θ, G, ∇G_u, ∇G_θ, α, du, dθ, c_1, c_2, m_1, m_2, m, λ)
+            return InverseReliabilityProblemCache(
+                x, u, θ, G, ∇G_u, ∇G_θ, α, du, dθ, c_1, c_2, m_1, m_2, m, λ
+            )
 
             # Break out:
             continue
         else
             # Check for convergance:
-            i == max_num_iters && error("The solution did not converge. Try increasing the maximum number of iterations (max_num_iters) or relaxing the convergance criterions (ϵ₁, ϵ₂, and ϵ₃).")
+            i == max_num_iters && error(
+                "The solution did not converge. Try increasing the maximum number of iterations (max_num_iters) or relaxing the convergance criterions (tol_1, tol_2, and tol_3).",
+            )
         end
     end
 end

@@ -6,7 +6,7 @@
     X_2 = randomvariable("Normal", "M", [0, 1])
     X_3 = randomvariable("Normal", "M", [0, 1])
     X_4 = randomvariable("Normal", "M", [0, 1])
-    X  = [X_1, X_2, X_3, X_4]
+    X = [X_1, X_2, X_3, X_4]
 
     # Define the correlation matrix:
     ρ_X = Matrix{Float64}(1.0 * I, 4, 4)
@@ -21,9 +21,9 @@
     problem = InverseReliabilityProblem(X, ρ_X, g, β)
 
     # Perform the inverse reliability analysis:
-    solution = solve(problem, 0.1, x_0 = [0.2, 0.2, 0.2, 0.2])
+    solution = solve(problem, 0.1, x_0=[0.2, 0.2, 0.2, 0.2])
 
     # Test the results:
-    @test isapprox(solution.x[:, end], [+0.218, +0.436, +0.655, +1.826], atol = 1E-3)
-    @test isapprox(solution.θ[end], 0.367, atol = 1E-3)
+    @test isapprox(solution.x[:, end], [+0.218, +0.436, +0.655, +1.826], atol=1E-3)
+    @test isapprox(solution.θ[end], 0.367, atol=1E-3)
 end

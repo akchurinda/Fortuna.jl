@@ -33,18 +33,20 @@ println("θ: $(params(Q)[2])")
 ## Supported Random Variables
 
 !!! note
+    
     If you want to define a random variable that is not supported by `Fortuna.jl` package, please raise an issue on the [Github Issues](https://github.com/akchurinda/Fortuna.jl/issues) page.
 
 `Fortuna.jl` package currently supports the following distributions:
-- [Exponential](https://juliastats.org/Distributions.jl/latest/univariate/#Distributions.Exponential)
-- [Frechet](https://juliastats.org/Distributions.jl/stable/univariate/#Distributions.Frechet)
-- [Gamma](https://juliastats.org/Distributions.jl/latest/univariate/#Distributions.Gamma)
-- [Gumbel](https://juliastats.org/Distributions.jl/latest/univariate/#Distributions.Gumbel)
-- [LogNormal](https://juliastats.org/Distributions.jl/latest/univariate/#Distributions.LogNormal)
-- [Normal](https://juliastats.org/Distributions.jl/latest/univariate/#Distributions.Normal)
-- [Poisson](https://juliastats.org/Distributions.jl/latest/univariate/#Distributions.Poisson)
-- [Uniform](https://juliastats.org/Distributions.jl/latest/univariate/#Distributions.Uniform)
-- [Weibull](https://juliastats.org/Distributions.jl/latest/univariate/#Distributions.Weibull)
+
+  - [Exponential](https://juliastats.org/Distributions.jl/latest/univariate/#Distributions.Exponential)
+  - [Frechet](https://juliastats.org/Distributions.jl/stable/univariate/#Distributions.Frechet)
+  - [Gamma](https://juliastats.org/Distributions.jl/latest/univariate/#Distributions.Gamma)
+  - [Gumbel](https://juliastats.org/Distributions.jl/latest/univariate/#Distributions.Gumbel)
+  - [LogNormal](https://juliastats.org/Distributions.jl/latest/univariate/#Distributions.LogNormal)
+  - [Normal](https://juliastats.org/Distributions.jl/latest/univariate/#Distributions.Normal)
+  - [Poisson](https://juliastats.org/Distributions.jl/latest/univariate/#Distributions.Poisson)
+  - [Uniform](https://juliastats.org/Distributions.jl/latest/univariate/#Distributions.Uniform)
+  - [Weibull](https://juliastats.org/Distributions.jl/latest/univariate/#Distributions.Weibull)
 
 ## API
 

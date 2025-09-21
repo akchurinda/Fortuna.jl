@@ -40,13 +40,13 @@ g(U_1,U_2) = \frac{1}{2} (U_1 - 2) ^ 2 - \frac{3}{2} (U_2 - 5) ^ 3 - 3,
 \label{EQ:LimitStateFunction}
 \end{equation}
 where $U_1$ and $U_2$ are two independent standard normal random variables. The failure domain defined by this limit state function is shown in \autoref{FIG:FailureDomain}. The reference geometric reliability index $\beta$ and failure probability $P_f$ obtained using the first-order reliability method (FORM) are $3.93$ and $4.21 \times 10 ^ {-5}$, respectively. These results can be easily recreated using `Fortuna.jl`:
+
 ```julia
 # Preamble:
 using Fortuna
 
 # Define the random vector and its correlation matrix:
-U = [randomvariable("Normal", "M", [0, 1]), 
-     randomvariable("Normal", "M", [0, 1])]
+U = [randomvariable("Normal", "M", [0, 1]), randomvariable("Normal", "M", [0, 1])]
 ρ = [1 0; 0 1]
 
 # Define the limit state function:
@@ -60,6 +60,7 @@ println("Failure probability: ", Solution.PoF)
 # Geometric reliability index: 3.932419
 # Failure probability: 4.204761E-5
 ```
+
 As shown in the code above, the results obtained using `Fortuna.jl` are consistent with the reference values.
 
 ![Failure domain defined by the limit state function in \autoref{EQ:LimitStateFunction}[^*]. \label{FIG:FailureDomain}](Example.pdf){ width=62.5% }

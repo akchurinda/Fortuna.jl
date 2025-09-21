@@ -17,14 +17,26 @@ mutable struct NatafTransformation <: AbstractIsoprobabilisticTransformation
     "Inverse of the lower triangular matrix of the Cholesky decomposition of the distorted correlation matrix ``L^{-1}``"
     L_inv::AbstractMatrix{<:Real}
 
-    function NatafTransformation(X::AbstractVector{<:Distributions.ContinuousUnivariateDistribution}, ρ_X::AbstractMatrix{<:Real})
+    function NatafTransformation(
+        X::AbstractVector{<:Distributions.ContinuousUnivariateDistribution},
+        ρ_X::AbstractMatrix{<:Real},
+    )
         # Compute the number of dimensions:
         N_d = length(X)
 
         # Error-catching:
-        size(ρ_X) == (N_d, N_d) || throw(DimensionMismatch("Size of the correlation matrix is not compatible with the dimensionality of the random vector!"))
-        maximum(abs.(ρ_X - I)) ≤ 1 || throw(ArgumentError("Off-diagonal entries of the correlation matrix must be between -1 and +1!"))
-        isposdef(ρ_X) || throw(ArgumentError("Correlation matrix must be a positive-definite matrix!"))
+        size(ρ_X) == (N_d, N_d) || throw(
+            DimensionMismatch(
+                "Size of the correlation matrix is not compatible with the dimensionality of the random vector!",
+            ),
+        )
+        maximum(abs.(ρ_X - I)) ≤ 1 || throw(
+            ArgumentError(
+                "Off-diagonal entries of the correlation matrix must be between -1 and +1!",
+            ),
+        )
+        isposdef(ρ_X) ||
+            throw(ArgumentError("Correlation matrix must be a positive-definite matrix!"))
 
         # Compute the distorted correlation matrix:
         ρ_Z, L, L_inv = getdistortedcorrelation(X, ρ_X)
@@ -40,7 +52,10 @@ Base.broadcastable(x::NatafTransformation) = Ref(x)
 
 Function used to compute the distorted correlation matrix ``\\rho^{Z}``.
 """
-function getdistortedcorrelation(X::AbstractVector{<:Distributions.ContinuousUnivariateDistribution}, ρ_X::AbstractMatrix{<:Real})
+function getdistortedcorrelation(
+    X::AbstractVector{<:Distributions.ContinuousUnivariateDistribution},
+    ρ_X::AbstractMatrix{<:Real},
+)
     # Compute the number of dimensions:
     N_d = length(X)
 
@@ -55,9 +70,9 @@ function getdistortedcorrelation(X::AbstractVector{<:Distributions.ContinuousUni
     W = Vector{Float64}(undef, num_ip^2)
     for i in 1:num_ip
         for j in 1:num_ip
-            ξ[(i-1)*num_ip+j] = ip_l_1d[i]
-            η[(i-1)*num_ip+j] = ip_l_1d[j]
-            W[(i-1)*num_ip+j] = ip_w_1d[i] * ip_w_1d[j]
+            ξ[(i - 1) * num_ip + j] = ip_l_1d[i]
+            η[(i - 1) * num_ip + j] = ip_l_1d[j]
+            W[(i - 1) * num_ip + j] = ip_w_1d[i] * ip_w_1d[j]
         end
     end
 
@@ -79,7 +94,7 @@ function getdistortedcorrelation(X::AbstractVector{<:Distributions.ContinuousUni
     ρ_Z = Matrix{common_parameter_type}(I, N_d, N_d)
     ϕ = Normal()
     for i in 1:N_d
-        for j in (i+1):N_d
+        for j in (i + 1):N_d
             # Check if the marginal distributions are uncorrelated:
             if ρ_X[i, j] == 0
                 continue
@@ -88,7 +103,16 @@ function getdistortedcorrelation(X::AbstractVector{<:Distributions.ContinuousUni
             # Define a function from which we will compute the entries of the distorted correlation matrix:
             h_i = (quantile.(X[i], cdf.(ϕ, z_i)) .- mean(X[i])) / std(X[i])
             h_j = (quantile.(X[j], cdf.(ϕ, z_j)) .- mean(X[j])) / std(X[j])
-            F(ρ_Z, p) = ((z_max - z_min) / 2) ^ 2 * dot(W .* (h_i .* h_j), ((1 / (2 * π * sqrt(1 - ρ_Z ^ 2))) * exp.((2 * ρ_Z * (z_i .* z_j) - z_i .^ 2 - z_j .^ 2) / (2 * (1 - ρ_Z ^ 2))))) - ρ_X[i, j]
+            F(ρ_Z, p) =
+                ((z_max - z_min) / 2) ^ 2 * dot(
+                    W .* (h_i .* h_j),
+                    (
+                        (1 / (2 * π * sqrt(1 - ρ_Z ^ 2))) * exp.(
+                            (2 * ρ_Z * (z_i .* z_j) - z_i .^ 2 - z_j .^ 2) /
+                            (2 * (1 - ρ_Z ^ 2)),
+                        )
+                    ),
+                ) - ρ_X[i, j]
 
             # Compute the entries of the distorted correlation matrix:
             try
@@ -96,7 +120,9 @@ function getdistortedcorrelation(X::AbstractVector{<:Distributions.ContinuousUni
                 solution = NonlinearSolve.solve(problem, nothing)
                 ρ_Z[i, j] = solution.u
             catch
-                problem = NonlinearSolve.IntervalNonlinearProblem(F, (-(1 - 1E-3), +(1 - 1E-3)))
+                problem = NonlinearSolve.IntervalNonlinearProblem(
+                    F, (-(1 - 1E-3), +(1 - 1E-3))
+                )
                 solution = NonlinearSolve.solve(problem, nothing)
                 ρ_Z[i, j] = solution.u
             end
@@ -114,7 +140,7 @@ end
 
 function _compute_z_sample(X, x, ϕ)
     y = cdf(X, x)
-    
+
     z = if y == 0
         invlogcdf(ϕ, logcdf(X, x))
     elseif y == 1
@@ -145,17 +171,26 @@ end
 
 Function used to transform samples from ``X``- to ``U``-space and vice versa. \\
 If `transformation_dir is:
-- `:X2U`, then the function transforms samples ``\\vec{x}`` from ``X``- to ``U``-space.
-- `:U2X`, then the function transforms samples ``\\vec{u}`` from ``U``- to ``X``-space.
+
+  - `:X2U`, then the function transforms samples ``\\vec{x}`` from ``X``- to ``U``-space.
+  - `:U2X`, then the function transforms samples ``\\vec{u}`` from ``U``- to ``X``-space.
 """
-function transformsamples(transf_obj::NatafTransformation, samples::AbstractVector{<:Real}, transformation_dir::Symbol)
+function transformsamples(
+    transf_obj::NatafTransformation,
+    samples::AbstractVector{<:Real},
+    transformation_dir::Symbol,
+)
     # Compute number of dimensions:
     N_d = length(samples)
 
     ϕ = Normal()
 
     if transformation_dir != :X2U && transformation_dir != :U2X
-        throw(ArgumentError("Invalid transformation direction! Available options are: `:X2U` and `:U2X`!"))
+        throw(
+            ArgumentError(
+                "Invalid transformation direction! Available options are: `:X2U` and `:U2X`!",
+            ),
+        )
     elseif transformation_dir == :X2U
         # Extract data:
         X = transf_obj.X
@@ -185,12 +220,17 @@ function transformsamples(transf_obj::NatafTransformation, samples::AbstractVect
     end
 end
 
-function transformsamples(transf_obj::NatafTransformation, samples::AbstractMatrix{<:Real}, transformation_dir::Symbol)
+function transformsamples(
+    transf_obj::NatafTransformation,
+    samples::AbstractMatrix{<:Real},
+    transformation_dir::Symbol,
+)
     # Compute number of samples and dimensions:
     N_d = size(samples, 1)
 
     # Error-catching:
-    length(transf_obj.X) == N_d || throw(ArgumentError("Number of dimensions of the provided samples is incorrect!"))
+    length(transf_obj.X) == N_d ||
+        throw(ArgumentError("Number of dimensions of the provided samples is incorrect!"))
 
     trans_samples = transformsamples.(transf_obj, eachcol(samples), transformation_dir)
     trans_samples = hcat(trans_samples...)
@@ -204,17 +244,26 @@ end
 
 Function used to compute the Jacobians of the transformations of samples from ``X``- to ``U``-space and vice versa. \\
 If `transformation_dir` is:
-- `:X2U`, then the function returns the Jacobians of the transformations of samples ``\\vec{x}`` from ``X``- to ``U``-space.
-- `:U2X`, then the function returns the Jacobians of the transformations of samples ``\\vec{u}`` from ``U``- to ``X``-space.
+
+  - `:X2U`, then the function returns the Jacobians of the transformations of samples ``\\vec{x}`` from ``X``- to ``U``-space.
+  - `:U2X`, then the function returns the Jacobians of the transformations of samples ``\\vec{u}`` from ``U``- to ``X``-space.
 """
-function getjacobian(transf_obj::NatafTransformation, samples::AbstractVector{<:Real}, transformation_dir::Symbol)
+function getjacobian(
+    transf_obj::NatafTransformation,
+    samples::AbstractVector{<:Real},
+    transformation_dir::Symbol,
+)
     # Compute number of dimensions:
     N_d = length(samples)
 
     ϕ = Normal()
 
     if transformation_dir != :X2U && transformation_dir != :U2X
-        throw(ArgumentError("Invalid transformation direction! Available options are: `:X2U` and `:U2X`!"))
+        throw(
+            ArgumentError(
+                "Invalid transformation direction! Available options are: `:X2U` and `:U2X`!",
+            ),
+        )
     elseif transformation_dir == :X2U
         # Extract data:
         X = transf_obj.X
@@ -249,12 +298,17 @@ function getjacobian(transf_obj::NatafTransformation, samples::AbstractVector{<:
     return J
 end
 
-function getjacobian(transf_obj::NatafTransformation, samples::AbstractMatrix{<:Real}, transformation_dir::Symbol)
+function getjacobian(
+    transf_obj::NatafTransformation,
+    samples::AbstractMatrix{<:Real},
+    transformation_dir::Symbol,
+)
     # Compute number of dimensions and samples:
     N_d = size(samples, 1)
 
     # Error-catching:
-    length(transf_obj.X) == N_d || throw(ArgumentError("Number of dimensions of the provided samples is incorrect!"))
+    length(transf_obj.X) == N_d ||
+        throw(ArgumentError("Number of dimensions of the provided samples is incorrect!"))
 
     # Compute the Jacobians:
     J = getjacobian.(transf_obj, eachcol(samples), transformation_dir)
@@ -303,7 +357,8 @@ function Distributions.pdf(transf_obj::NatafTransformation, x::AbstractMatrix{<:
     N_d = size(x, 1)
 
     # Error-catching:
-    length(transf_obj.X) == N_d || throw(ArgumentError("Number of dimensions of the provided samples is incorrect!"))
+    length(transf_obj.X) == N_d ||
+        throw(ArgumentError("Number of dimensions of the provided samples is incorrect!"))
 
     # Compute the joint PDF:
     pdf_x = pdf.(transf_obj, eachcol(x))

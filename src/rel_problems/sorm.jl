@@ -29,7 +29,6 @@ Type used to perform reliability analysis using Point-Fitting (PF) method.
 $(TYPEDFIELDS)
 """
 Base.@kwdef struct PF <: SORMSubmethod # Point-Fitting method
-
 end
 
 """
@@ -41,11 +40,11 @@ $(TYPEDFIELDS)
 """
 struct CFCache # Curve-Fitting method
     "Results of reliability analysis performed using First-Order Reliability Method (FORM)"
-    form_solution::Union{RFCache, HLRFCache, iHLRFCache}
+    form_solution::Union{RFCache,HLRFCache,iHLRFCache}
     "Generalized reliability indices ``\\beta``"
-    β_2::Vector{Union{Missing, Float64}}
+    β_2::Vector{Union{Missing,Float64}}
     "Probabilities of failure ``P_{f}``"
-    PoF_2::Vector{Union{Missing, Float64}}
+    PoF_2::Vector{Union{Missing,Float64}}
     "Principal curvatures ``\\kappa``"
     κ::Vector{Float64}
 end
@@ -61,9 +60,9 @@ struct PFCache # Point-Fitting method
     "Results of reliability analysis performed using First-Order Reliability Method (FORM)"
     form_solution::iHLRFCache
     "Generalized reliability index ``\\beta``"
-    β_2::Vector{Union{Missing, Float64}}
+    β_2::Vector{Union{Missing,Float64}}
     "Probabilities of failure ``P_{f}``"
-    PoF_2::Vector{Union{Missing, Float64}}
+    PoF_2::Vector{Union{Missing,Float64}}
     "Fitting points on the negative side of the hyper-cylinder"
     neg_fit_pts::Matrix{Float64}
     "Fitting points on the positive side of the hyper-cylinder"
@@ -75,34 +74,45 @@ struct PFCache # Point-Fitting method
 end
 
 """
-solve(problem::ReliabilityProblem, AnalysisMethod::SORM; 
-    form_solution::Union{Nothing, HLRFCache, iHLRFCache} = nothing,
-    FORMConfig::FORM = FORM(), 
-    backend = AutoForwardDiff())
+solve(problem::ReliabilityProblem, AnalysisMethod::SORM;
+form_solution::Union{Nothing, HLRFCache, iHLRFCache} = nothing,
+FORMConfig::FORM = FORM(),
+backend = AutoForwardDiff())
 
 Function used to solve reliability problems using Second-Order Reliability Method (SORM).
 """
-function solve(problem::ReliabilityProblem, AnalysisMethod::SORM; 
-        form_solution::Union{Nothing, RFCache, HLRFCache, iHLRFCache} = nothing,
-        form_config::FORM = FORM(), 
-        backend = AutoForwardDiff())
+function solve(
+    problem::ReliabilityProblem,
+    AnalysisMethod::SORM;
+    form_solution::Union{Nothing,RFCache,HLRFCache,iHLRFCache}=nothing,
+    form_config::FORM=FORM(),
+    backend=AutoForwardDiff(),
+)
     # Extract the analysis method:
-    submethod  = AnalysisMethod.submethod
+    submethod = AnalysisMethod.submethod
 
     # Error-catching:
-    isa(form_config.submethod, MCFOSM) && throw(ArgumentError("MCFOSM cannot be used with SORM as it does not provide any information about the design point!"))
+    isa(form_config.submethod, MCFOSM) && throw(
+        ArgumentError(
+            "MCFOSM cannot be used with SORM as it does not provide any information about the design point!",
+        ),
+    )
 
     # Determine the design point using FORM:
-    form_solution = isnothing(form_solution) ? solve(problem, form_config, backend = backend) : form_solution
-    u            = form_solution.u[:, end]
-    ∇G           = form_solution.∇G[:, end]
-    α            = form_solution.α[:, end]
-    β_1           = form_solution.β
+    form_solution = if isnothing(form_solution)
+        solve(problem, form_config; backend=backend)
+    else
+        form_solution
+    end
+    u = form_solution.u[:, end]
+    ∇G = form_solution.∇G[:, end]
+    α = form_solution.α[:, end]
+    β_1 = form_solution.β
 
     # Extract the problem data:
-    X  = problem.X
+    X = problem.X
     ρ_X = problem.ρ_X
-    g  = problem.g
+    g = problem.g
 
     if !isa(submethod, CF) && !isa(submethod, PF)
         error("Invalid SORM submethod!")
@@ -127,13 +137,17 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::SORM;
         κ = LinearAlgebra.eigen(A[1:(end - 1), 1:(end - 1)]).values
 
         # Compute the probabilities of failure:
-        PoF_2 = Vector{Union{Missing, Float64}}(undef, 2)
+        PoF_2 = Vector{Union{Missing,Float64}}(undef, 2)
 
         begin # Hohenbichler-Rackwitz (1988)
-            ψ = Distributions.pdf(Distributions.Normal(), β_1) / Distributions.cdf(Distributions.Normal(), -β_1)
+            ψ =
+                Distributions.pdf(Distributions.Normal(), β_1) /
+                Distributions.cdf(Distributions.Normal(), -β_1)
 
             if all(κᵢ -> ψ * κᵢ > -1, κ)
-                PoF_2[1] = Distributions.cdf(Distributions.Normal(), -β_1) * prod(κᵢ -> 1 / sqrt(1 + ψ * κᵢ), κ)
+                PoF_2[1] =
+                    Distributions.cdf(Distributions.Normal(), -β_1) *
+                    prod(κᵢ -> 1 / sqrt(1 + ψ * κᵢ), κ)
             else
                 PoF_2[1] = missing
                 @warn "Condition of Hohenbichler-Rackwitz's approximation of the probability of failure was not satisfied!"
@@ -142,7 +156,9 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::SORM;
 
         begin # Breitung (1984)
             if all(κᵢ -> β_1 * κᵢ > -1, κ)
-                PoF_2[2] = Distributions.cdf(Distributions.Normal(), -β_1) * prod(κᵢ -> 1 / sqrt(1 + β_1 * κᵢ), κ)
+                PoF_2[2] =
+                    Distributions.cdf(Distributions.Normal(), -β_1) *
+                    prod(κᵢ -> 1 / sqrt(1 + β_1 * κᵢ), κ)
             else
                 PoF_2[2] = missing
                 @warn "Condition of Breitung's approximation of the probability of failure was not satisfied!"
@@ -150,7 +166,13 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::SORM;
         end
 
         # Compute the generalized reliability index:
-        β_2 = [ismissing(PoF_2[i]) ? missing : -Distributions.quantile(Distributions.Normal(), PoF_2[i]) for i in eachindex(PoF_2)]
+        β_2 = [
+            if ismissing(PoF_2[i])
+                missing
+            else
+                -Distributions.quantile(Distributions.Normal(), PoF_2[i])
+            end for i in eachindex(PoF_2)
+        ]
 
         # Return results:
         return CFCache(form_solution, β_2, PoF_2, κ)
@@ -180,32 +202,46 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::SORM;
         # Compute fitting points:
         pos_fit_pts = Matrix{Float64}(undef, num_dims - 1, 2)
         neg_fit_pts = Matrix{Float64}(undef, num_dims - 1, 2)
-        κ_1             = Matrix{Float64}(undef, num_dims - 1, 2)
+        κ_1 = Matrix{Float64}(undef, num_dims - 1, 2)
         for i in 1:(num_dims - 1)
             function F(u, p)
-                u_prime      = zeros(eltype(u), num_dims)
-                u_prime[i]   = p
+                u_prime = zeros(eltype(u), num_dims)
+                u_prime[i] = p
                 u_prime[end] = u
-            
+
                 return G_prime(g, nataf_obj, R, u_prime)
             end
 
             # Negative side:
-            neg_problem  = NonlinearSolve.NonlinearProblem(F, β_1, -H)
+            neg_problem = NonlinearSolve.NonlinearProblem(F, β_1, -H)
             neg_solution = try
-                NonlinearSolve.solve(neg_problem, nothing, abstol = 1E-9, reltol = 1E-9)
+                NonlinearSolve.solve(neg_problem, nothing; abstol=1E-9, reltol=1E-9)
             catch
-                NonlinearSolve.solve(neg_problem, NonlinearSolve.FastShortcutNonlinearPolyalg(autodiff = AutoFiniteDiff()), abstol = 1E-9, reltol = 1E-9)
+                NonlinearSolve.solve(
+                    neg_problem,
+                    NonlinearSolve.FastShortcutNonlinearPolyalg(;
+                        autodiff=AutoFiniteDiff()
+                    );
+                    abstol=1E-9,
+                    reltol=1E-9,
+                )
             end
             neg_fit_pts[i, 1] = -H
             neg_fit_pts[i, 2] = neg_solution.u
 
             # Positive side:
-            pos_problem  = NonlinearSolve.NonlinearProblem(F, β_1, +H)
+            pos_problem = NonlinearSolve.NonlinearProblem(F, β_1, +H)
             pos_solution = try
-                NonlinearSolve.solve(pos_problem, nothing, abstol = 1E-9, reltol = 1E-9)
+                NonlinearSolve.solve(pos_problem, nothing; abstol=1E-9, reltol=1E-9)
             catch
-                NonlinearSolve.solve(neg_problem, NonlinearSolve.FastShortcutNonlinearPolyalg(autodiff = AutoFiniteDiff()), abstol = 1E-9, reltol = 1E-9)
+                NonlinearSolve.solve(
+                    neg_problem,
+                    NonlinearSolve.FastShortcutNonlinearPolyalg(;
+                        autodiff=AutoFiniteDiff()
+                    );
+                    abstol=1E-9,
+                    reltol=1E-9,
+                )
             end
             pos_fit_pts[i, 1] = +H
             pos_fit_pts[i, 2] = pos_solution.u
@@ -232,15 +268,19 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::SORM;
         end
 
         # Compute the probabilities of failure for each semiparabola:
-        PoF_2 = Matrix{Union{Missing, Float64}}(undef, num_hyperquadrants, 2)
+        PoF_2 = Matrix{Union{Missing,Float64}}(undef, num_hyperquadrants, 2)
         for i in 1:num_hyperquadrants
             κ = κ_2[i, :]
 
             begin # Hohenbichler-Rackwitz (1988)
-                ψ = Distributions.pdf(Distributions.Normal(), β_1) / Distributions.cdf(Distributions.Normal(), -β_1)
+                ψ =
+                    Distributions.pdf(Distributions.Normal(), β_1) /
+                    Distributions.cdf(Distributions.Normal(), -β_1)
 
                 if all(κᵢ -> ψ * κᵢ > -1, κ)
-                    PoF_2[i, 1] = Distributions.cdf(Distributions.Normal(), -β_1) * prod(κᵢ -> 1 / sqrt(1 + ψ * κᵢ), κ)
+                    PoF_2[i, 1] =
+                        Distributions.cdf(Distributions.Normal(), -β_1) *
+                        prod(κᵢ -> 1 / sqrt(1 + ψ * κᵢ), κ)
                 else
                     PoF_2[i, 1] = missing
                     @warn "Condition of Hohenbichler-Rackwitz's approximation of the probability of failure was not satisfied!"
@@ -249,7 +289,9 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::SORM;
 
             begin # Breitung (1984)
                 if all(κᵢ -> β_1 * κᵢ > -1, κ)
-                    PoF_2[i, 2] = Distributions.cdf(Distributions.Normal(), -β_1) * prod(κᵢ -> 1 / sqrt(1 + β_1 * κᵢ), κ)
+                    PoF_2[i, 2] =
+                        Distributions.cdf(Distributions.Normal(), -β_1) *
+                        prod(κᵢ -> 1 / sqrt(1 + β_1 * κᵢ), κ)
                 else
                     PoF_2[i, 2] = missing
                     @warn "Condition of Breitung's approximation of the probability of failure was not satisfied!"
@@ -257,27 +299,39 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::SORM;
             end
         end
 
-        PoF_2 = (1/ num_hyperquadrants) * PoF_2
-        PoF_2 = sum(PoF_2, dims = 1)
+        PoF_2 = (1 / num_hyperquadrants) * PoF_2
+        PoF_2 = sum(PoF_2; dims=1)
         PoF_2 = vec(PoF_2)
 
         # Compute the generalized reliability index:
-        β_2 = [ismissing(PoF_2[i]) ? missing : -Distributions.quantile(Distributions.Normal(), PoF_2[i]) for i in eachindex(PoF_2)]
+        β_2 = [
+            if ismissing(PoF_2[i])
+                missing
+            else
+                -Distributions.quantile(Distributions.Normal(), PoF_2[i])
+            end for i in eachindex(PoF_2)
+        ]
 
         # Return results:
         return PFCache(form_solution, β_2, PoF_2, neg_fit_pts, pos_fit_pts, κ_1, κ_2)
     end
 end
 
-function gethessian(g::Function, nataf_obj::NatafTransformation, num_dims::Integer, u::Vector{Float64}, Δ::Real)
+function gethessian(
+    g::Function,
+    nataf_obj::NatafTransformation,
+    num_dims::Integer,
+    u::Vector{Float64},
+    Δ::Real,
+)
     # Preallocate:
     H = Matrix{Float64}(undef, num_dims, num_dims)
 
     for i in 1:num_dims
         for j in 1:num_dims
             # Define the pertubation directions:
-            e_i = zeros(num_dims,)
-            e_j = zeros(num_dims,)
+            e_i = zeros(num_dims)
+            e_j = zeros(num_dims)
             e_i[i] = 1
             e_j[j] = 1
 
@@ -309,8 +363,8 @@ end
 
 function getorthonormal(α::Vector{Float64}, num_dims::Integer)
     # Initilize the matrix:
-    A       = Matrix(1.0 * I, num_dims, num_dims)
-    A       = reverse(A, dims = 2)
+    A = Matrix(1.0 * I, num_dims, num_dims)
+    A = reverse(A; dims=2)
     A[:, 1] = LinearAlgebra.transpose(α)
 
     # Perform QR factorization:
@@ -318,13 +372,18 @@ function getorthonormal(α::Vector{Float64}, num_dims::Integer)
     Q = Matrix(Q)
 
     # Clean up the result:
-    R = LinearAlgebra.transpose(reverse(Q, dims = 2))
+    R = LinearAlgebra.transpose(reverse(Q; dims=2))
     R = Matrix(R)
 
     return R
 end
 
-function G_prime(g::Function, nataf_obj::NatafTransformation, R::Matrix{Float64}, U_prime_samples::AbstractVector)
+function G_prime(
+    g::Function,
+    nataf_obj::NatafTransformation,
+    R::Matrix{Float64},
+    U_prime_samples::AbstractVector,
+)
     # Transform samples from U'- to X-space:
     U_samples = LinearAlgebra.transpose(R) * U_prime_samples
     X_samples = transformsamples(nataf_obj, U_samples, :U2X)

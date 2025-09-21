@@ -43,14 +43,14 @@ Function used to solve reliability problems using Subset Simulation Method (SSM)
 """
 function solve(problem::ReliabilityProblem, analysis_method::SSM)
     # Extract analysis details:
-    p_0            = analysis_method.p_0
-    num_samples    = analysis_method.num_samples
+    p_0 = analysis_method.p_0
+    num_samples = analysis_method.num_samples
     max_num_subsets = analysis_method.max_num_subsets
 
     # Extract problem data:
-    X  = problem.X
+    X = problem.X
     ρ_X = problem.ρ_X
-    g  = problem.g
+    g = problem.g
 
     # Perform Nataf Transformation:
     nataf_obj = NatafTransformation(X, ρ_X)
@@ -67,9 +67,9 @@ function solve(problem::ReliabilityProblem, analysis_method::SSM)
     # Preallocate:
     U_samples_subset = Vector{Matrix{Float64}}()
     X_samples_subset = Vector{Matrix{Float64}}()
-    C_subset        = Vector{Float64}(undef, max_num_subsets)
-    PoF_subset      = Vector{Float64}(undef, max_num_subsets)
-    convergence    = true
+    C_subset = Vector{Float64}(undef, max_num_subsets)
+    PoF_subset = Vector{Float64}(undef, max_num_subsets)
+    convergence = true
 
     # Loop through each subset:
     for i in 1:max_num_subsets
@@ -82,8 +82,14 @@ function solve(problem::ReliabilityProblem, analysis_method::SSM)
 
             # Generate samples using the Modified Metropolis-Hastings algorithm:
             for j in 1:num_mcs
-                U_samples[:, (num_samples_chain * (j - 1) + 1):(num_samples_chain * j)] = 
-                ModifiedMetropolisHastings(U_samples_subset[i - 1][:, j], C_subset[i - 1], num_dims, num_samples_chain, nataf_obj, g)
+                U_samples[:, (num_samples_chain * (j - 1) + 1):(num_samples_chain * j)] = ModifiedMetropolisHastings(
+                    U_samples_subset[i - 1][:, j],
+                    C_subset[i - 1],
+                    num_dims,
+                    num_samples_chain,
+                    nataf_obj,
+                    g,
+                )
             end
         end
 
@@ -120,14 +126,16 @@ function solve(problem::ReliabilityProblem, analysis_method::SSM)
             PoF_subset[i] = length(idx) / size(G_samples)[1]
 
             # Clean up the result:
-            C_subset   = C_subset[1:i]
+            C_subset = C_subset[1:i]
             PoF_subset = PoF_subset[1:i]
 
             # Compute the final probability of failure:
             PoF = prod(PoF_subset)
 
             # Return the result:
-            return SSMCache(X_samples_subset, U_samples_subset, C_subset, PoF_subset, PoF, convergence)
+            return SSMCache(
+                X_samples_subset, U_samples_subset, C_subset, PoF_subset, PoF, convergence
+            )
         else
             # Retain samples below the threshold:
             idx = findall(x -> x ≤ C_subset[i], G_samples)
@@ -140,9 +148,16 @@ function solve(problem::ReliabilityProblem, analysis_method::SSM)
     end
 end
 
-function ModifiedMetropolisHastings(start_point::Vector{Float64}, curr_threshold::Float64, num_dims::Integer, num_samples_chain::Integer, nataf_obj::NatafTransformation, g::Function)
+function ModifiedMetropolisHastings(
+    start_point::Vector{Float64},
+    curr_threshold::Float64,
+    num_dims::Integer,
+    num_samples_chain::Integer,
+    nataf_obj::NatafTransformation,
+    g::Function,
+)
     # Preallocate:
-    chain_samples       = zeros(num_dims, num_samples_chain)
+    chain_samples = zeros(num_dims, num_samples_chain)
     chain_samples[:, 1] = start_point
 
     # Define a standard multivariate normal PDF:
@@ -167,11 +182,11 @@ function ModifiedMetropolisHastings(start_point::Vector{Float64}, curr_threshold
         # Compute the indicator function:
         X_prop_state = transformsamples(nataf_obj, prop_state, :U2X)
         G_prop_state = g(X_prop_state)
-        I            = G_prop_state ≤ curr_threshold ? 1 : 0
+        I = G_prop_state ≤ curr_threshold ? 1 : 0
 
         # Compute the acceptance ratio:        
-        α = (pdf(ϕ, prop_state) * I) / pdf(ϕ, chain_samples[:, i]) 
-        
+        α = (pdf(ϕ, prop_state) * I) / pdf(ϕ, chain_samples[:, i])
+
         # Accept or reject the proposed state:
         chain_samples[:, i + 1] = U[i] <= α ? prop_state : chain_samples[:, i]
     end
@@ -187,7 +202,7 @@ function G(g::Function, nataf_obj::NatafTransformation, U_samples::AbstractMatri
     # Clean up the transformed samples:
     X_samples_clean = eachcol(X_samples)
     X_samples_clean = Vector.(X_samples_clean)
-    
+
     # Evaluate the limit state function at the transform samples:
     G_samples = g.(X_samples_clean)
 

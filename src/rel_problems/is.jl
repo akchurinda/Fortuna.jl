@@ -33,18 +33,22 @@ end
 
 Function used to solve reliability problems using Importance Sampling (IS) method.
 """
-function solve(problem::ReliabilityProblem, analysis_method::IS; showprogressbar = false)
+function solve(problem::ReliabilityProblem, analysis_method::IS; showprogressbar=false)
     # Extract the analysis details:
     q = analysis_method.q
     num_sims = analysis_method.num_sims
 
     # Extract data:
-    g  = problem.g
-    X  = problem.X
+    g = problem.g
+    X = problem.X
     ρ_X = problem.ρ_X
 
     # Error-catching:
-    length(q) == length(X) || throw(DimensionMismatch("Dimensionality of the proposal distribution does not match the dimensionality of the random vector!"))
+    length(q) == length(X) || throw(
+        DimensionMismatch(
+            "Dimensionality of the proposal distribution does not match the dimensionality of the random vector!",
+        ),
+    )
 
     # If the marginal distrbutions are correlated, define a Nataf object:
     nataf_obj = NatafTransformation(X, ρ_X)
@@ -58,8 +62,11 @@ function solve(problem::ReliabilityProblem, analysis_method::IS; showprogressbar
 
     # Evaluate the limit state function at the generate samples:
     g_vals = Vector{Float64}(undef, num_sims)
-    ProgressMeter.@showprogress desc = "Evaluating the limit state function..." enabled = showprogressbar for i in axes(samples, 2)
-        g_vals[i] = g(samples[:, i])
+    ProgressMeter.@showprogress desc="Evaluating the limit state function..." enabled=showprogressbar for i in
+                                                                                                          axes(
+        samples, 2
+    )
+        g_vals[i]=g(samples[:, i])
     end
 
     # Evaluate the indicator function at the generate samples:

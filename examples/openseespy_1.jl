@@ -6,12 +6,12 @@ using PyCall
 ops = pyimport("openseespy.opensees")
 
 # Define the random vector:
-t_1 = randomvariable("Normal", "M", [   20,    20 * 0.01])
-t_2 = randomvariable("Normal", "M", [   50,    50 * 0.01])
+t_1 = randomvariable("Normal", "M", [20, 20 * 0.01])
+t_2 = randomvariable("Normal", "M", [50, 50 * 0.01])
 P_1 = randomvariable("Gumbel", "M", [20000, 20000 * 0.01])
 P_2 = randomvariable("Gumbel", "M", [20000, 20000 * 0.01])
 P_3 = randomvariable("Gumbel", "M", [20000, 20000 * 0.01])
-X  = [t_1, t_2, P_1, P_2, P_3]
+X = [t_1, t_2, P_1, P_2, P_3]
 
 # Define the correlation matrix:
 ρ_X = [
@@ -19,19 +19,20 @@ X  = [t_1, t_2, P_1, P_2, P_3]
     0.5 1.0 0.0 0.0 0.0
     0.0 0.0 1.0 0.0 0.0
     0.0 0.0 0.0 1.0 0.0
-    0.0 0.0 0.0 0.0 1.0]
+    0.0 0.0 0.0 0.0 1.0
+]
 
 # Define the limit state function:
 function g(x::Vector)
     ops.wipe()
     ops.model("basic", "-ndm", 2, "-ndf", 2)
 
-    ops.node(1,     0,    0)
-    ops.node(2,  4000, 2000)
-    ops.node(3,  8000, 4000)
-    ops.node(4,  8000,    0)
+    ops.node(1, 0, 0)
+    ops.node(2, 4000, 2000)
+    ops.node(3, 8000, 4000)
+    ops.node(4, 8000, 0)
     ops.node(5, 12000, 2000)
-    ops.node(6, 16000,    0)
+    ops.node(6, 16000, 0)
 
     ops.fix(1, 1, 1)
     ops.fix(6, 0, 1)
@@ -50,9 +51,9 @@ function g(x::Vector)
     ops.element("Truss", 9, 5, 6, A, 1)
 
     ops.timeSeries("Linear", 1)
-    
+
     ops.pattern("Plain", 1, 1)
-    
+
     ops.load(2, 0, -x[3])
     ops.load(3, 0, -x[4])
     ops.load(5, 0, -x[5])
@@ -75,6 +76,6 @@ end
 problem = ReliabilityProblem(X, ρ_X, g)
 
 # Solve the reliability problem using the FORM:
-solution = solve(problem, FORM(), backend = AutoFiniteDiff())
+solution = solve(problem, FORM(); backend=AutoFiniteDiff())
 println("β   = $(solution.β)  ")
 println("PoF = $(solution.PoF)")

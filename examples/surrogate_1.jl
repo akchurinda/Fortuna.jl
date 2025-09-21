@@ -7,8 +7,8 @@ ops = pyimport("openseespy.opensees")
 
 # Define the random variables:
 X_1 = randomvariable("Normal", "M", [29000, 0.05 * 29000]) # Young's modulus
-X_2 = randomvariable("Normal", "M", [  110, 0.05 *   110]) # Moment of inertia about major axis
-X  = [X_1, X_2]
+X_2 = randomvariable("Normal", "M", [110, 0.05 * 110]) # Moment of inertia about major axis
+X = [X_1, X_2]
 
 # Define the correlation matrix:
 ρ_X = [1 0; 0 1]
@@ -22,16 +22,16 @@ function beam(x::Vector)
     ops.model("basic", "-ndm", 2, "-ndf", 3)
 
     # Define the nodes:
-    ops.node( 1,  0 * 18, 0)
-    ops.node( 2,  1 * 18, 0)
-    ops.node( 3,  2 * 18, 0)
-    ops.node( 4,  3 * 18, 0)
-    ops.node( 5,  4 * 18, 0)
-    ops.node( 6,  5 * 18, 0)
-    ops.node( 7,  6 * 18, 0)
-    ops.node( 8,  7 * 18, 0)
-    ops.node( 9,  8 * 18, 0)
-    ops.node(10,  9 * 18, 0)
+    ops.node(1, 0 * 18, 0)
+    ops.node(2, 1 * 18, 0)
+    ops.node(3, 2 * 18, 0)
+    ops.node(4, 3 * 18, 0)
+    ops.node(5, 4 * 18, 0)
+    ops.node(6, 5 * 18, 0)
+    ops.node(7, 6 * 18, 0)
+    ops.node(8, 7 * 18, 0)
+    ops.node(9, 8 * 18, 0)
+    ops.node(10, 9 * 18, 0)
     ops.node(11, 10 * 18, 0)
 
     # Define the boundary conditions:
@@ -42,28 +42,28 @@ function beam(x::Vector)
 
     # Define the cross-sectional properties:
     A = 9.12
-    ops.section("Elastic",  1, x[1], A, x[2])
+    ops.section("Elastic", 1, x[1], A, x[2])
 
     # Define the transformation:
     ops.geomTransf("PDelta", 1)
 
     # Define the elements:
-    ops.element("elasticBeamColumn",  1,  1,  2,  1, 1)
-    ops.element("elasticBeamColumn",  2,  2,  3,  1, 1)
-    ops.element("elasticBeamColumn",  3,  3,  4,  1, 1)
-    ops.element("elasticBeamColumn",  4,  4,  5,  1, 1)
-    ops.element("elasticBeamColumn",  5,  5,  6,  1, 1)
-    ops.element("elasticBeamColumn",  6,  6,  7,  1, 1)
-    ops.element("elasticBeamColumn",  7,  7,  8,  1, 1)
-    ops.element("elasticBeamColumn",  8,  8,  9,  1, 1)
-    ops.element("elasticBeamColumn",  9,  9, 10,  1, 1)
-    ops.element("elasticBeamColumn", 10, 10, 11,  1, 1)
+    ops.element("elasticBeamColumn", 1, 1, 2, 1, 1)
+    ops.element("elasticBeamColumn", 2, 2, 3, 1, 1)
+    ops.element("elasticBeamColumn", 3, 3, 4, 1, 1)
+    ops.element("elasticBeamColumn", 4, 4, 5, 1, 1)
+    ops.element("elasticBeamColumn", 5, 5, 6, 1, 1)
+    ops.element("elasticBeamColumn", 6, 6, 7, 1, 1)
+    ops.element("elasticBeamColumn", 7, 7, 8, 1, 1)
+    ops.element("elasticBeamColumn", 8, 8, 9, 1, 1)
+    ops.element("elasticBeamColumn", 9, 9, 10, 1, 1)
+    ops.element("elasticBeamColumn", 10, 10, 11, 1, 1)
 
     # Define the loads:
     ops.timeSeries("Linear", 1)
     ops.pattern("Plain", 1, 1)
-    ops.load(11,   0, -1, 0)
-    ops.load(11, -50,  0, 0)
+    ops.load(11, 0, -1, 0)
+    ops.load(11, -50, 0, 0)
 
     # Define the solver parameters:
     ops.system("BandSPD")
@@ -80,7 +80,7 @@ function beam(x::Vector)
     Δ = -ops.nodeDisp(11, 2)
 
     # Return the result:
-    return Δ 
+    return Δ
 end
 
 # Define the limit state function:
@@ -90,13 +90,13 @@ g(x::Vector) = 1 - beam(x)
 problem = ReliabilityProblem(X, ρ_X, g)
 
 # Perform the reliability analysis using the FORM:
-solution = solve(problem, FORM(), backend = AutoFiniteDiff())
+solution = solve(problem, FORM(); backend=AutoFiniteDiff())
 println("FORM:")
 println("β: $(solution.β)")
 println("PoF: $(solution.PoF)")
 
 # Perform the reliability analysis using the SORM:
-solution = solve(problem, SORM(), backend = AutoFiniteDiff())
+solution = solve(problem, SORM(); backend=AutoFiniteDiff())
 println("SORM:")
 println("β: $(solution.β_2[1]) (Hohenbichler and Rackwitz)")
 println("β: $(solution.β_2[2]) (Breitung)")
@@ -107,12 +107,8 @@ println("PoF: $(solution.PoF_2[2]) (Breitung)")
 using Surrogates
 
 # Define the training points:
-lb = [
-    29000 - 6 * 0.05 * 29000,
-      110 - 6 * 0.05 *   110]
-ub = [
-    29000 + 6 * 0.05 * 29000,
-      110 + 6 * 0.05 *   110]
+lb = [29000 - 6 * 0.05 * 29000, 110 - 6 * 0.05 * 110]
+ub = [29000 + 6 * 0.05 * 29000, 110 + 6 * 0.05 * 110]
 x_train = sample(50, lb, ub, SobolSample())
 y_train = [beam([x...]) for x in x_train]
 

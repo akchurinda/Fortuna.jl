@@ -12,7 +12,7 @@ Random.seed!(1)
 
 To generate samples of a random variable:
 
-- Generate a random variable (`X`).
+  - Generate a random variable (`X`).
 
 ```@example sample_rv
 X = randomvariable("Gamma", "M", [10, 1.5])
@@ -20,7 +20,7 @@ X = randomvariable("Gamma", "M", [10, 1.5])
 nothing # hide
 ```
 
-- Sample the generated random variable using a sampling technique of your choice.
+  - Sample the generated random variable using a sampling technique of your choice.
 
 ```@example sample_rv
 X_samples = rand(X, 10000, :LHS)
@@ -36,7 +36,7 @@ nothing # hide
 
 To generate samples of a random vector with *uncorrelated* marginals:
 
-- Generate random variables (`X_1` and `X_2`).
+  - Generate random variables (`X_1` and `X_2`).
 
 ```@example sample_rv
 X_1 = randomvariable("Gamma", "M", [10, 1.5])
@@ -45,7 +45,7 @@ X_2 = randomvariable("Gamma", "M", [15, 2.5])
 nothing #hide
 ```
 
-- Define a random vector (`X`) with the generated random variables as marginals.
+  - Define a random vector (`X`) with the generated random variables as marginals.
 
 ```@example sample_rv
 X = [X_1, X_2]
@@ -53,7 +53,7 @@ X = [X_1, X_2]
 nothing # hide
 ```
 
-- Sample the defined random vector using a sampling technique of your choice.
+  - Sample the defined random vector using a sampling technique of your choice.
 
 ```@example sample_rv
 X_samples = rand(X, 10000, :LHS)
@@ -68,11 +68,12 @@ nothing # hide
 ## Sampling Random Vectors with Correlated Marginals
 
 !!! note
+    
     When sampling random vectors with correlated marginals, the sampling technique determines how samples are generated in the space of uncorrelated standard normal random variables (referred to as ``U``-space). These generated samples are then transformed into the target space of correlated non-normal random variables (referred to as ``X``-space). For more information see [Nataf Transformation](@ref NatafTransformationPage) and [Rosenblatt Transformation](@ref RosenblattTransformationPage).
 
 To generate samples of a random vector with *correlated* marginals:
 
-- Generate random variables (`X_1` and `X_2`).
+  - Generate random variables (`X_1` and `X_2`).
 
 ```@example sample_rv
 X_1 = randomvariable("Gamma", "M", [10, 1.5])
@@ -81,7 +82,7 @@ X_2 = randomvariable("Gamma", "M", [15, 2.5])
 nothing # hide
 ```
 
-- Define a random vector (`X`) with the generated random variables as marginals.
+  - Define a random vector (`X`) with the generated random variables as marginals.
 
 ```@example sample_rv
 X = [X_1, X_2]
@@ -89,7 +90,7 @@ X = [X_1, X_2]
 nothing # hide
 ```
 
-- Define a correlated matrix (`ρ_X`) for the defined random vector.
+  - Define a correlated matrix (`ρ_X`) for the defined random vector.
 
 ```@example sample_rv
 ρ_X = [1 -0.75; -0.75 1]
@@ -97,7 +98,7 @@ nothing # hide
 nothing # hide
 ```
 
-- Define a transformation object that hold all information about the defined random vector.
+  - Define a transformation object that hold all information about the defined random vector.
 
 ```@example sample_rv
 trans_obj = NatafTransformation(X, ρ_X)
@@ -105,7 +106,7 @@ trans_obj = NatafTransformation(X, ρ_X)
 nothing # hide
 ```
 
-- Sample the defined random vector using a sampling technique of your choice.
+  - Sample the defined random vector using a sampling technique of your choice.
 
 ```@example sample_rv
 X_samples, Z_samples, U_samples = rand(trans_obj, 10000, :LHS)

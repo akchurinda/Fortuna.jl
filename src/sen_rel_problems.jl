@@ -34,7 +34,6 @@ mutable struct SensitivityProblemTypeII <: AbstractReliabilityProblem
     Θ::AbstractVector{<:Real}
 end
 
-
 """
     SensitivityProblemCache
 
@@ -56,22 +55,22 @@ end
 
 Function used to solve sensitivity problems of type I (sensitivities w.r.t. the parameters of the limit state function).
 """
-function solve(problem::SensitivityProblemTypeI; backend = AutoForwardDiff())
+function solve(problem::SensitivityProblemTypeI; backend=AutoForwardDiff())
     # Extract the problem data:
-    X  = problem.X
+    X = problem.X
     ρ_X = problem.ρ_X
-    g  = problem.g
-    Θ  = problem.Θ
+    g = problem.g
+    Θ = problem.Θ
 
     # Define a reliability problem for the FORM analysis:
     g₁(x) = g(x, Θ)
     form_problem = ReliabilityProblem(X, ρ_X, g₁)
 
     # Solve the reliability problem using the FORM:
-    form_solution = solve(form_problem, FORM(), backend = backend)
-    x            = form_solution.x[:, end]
-    u            = form_solution.u[:, end]
-    β            = form_solution.β
+    form_solution = solve(form_problem, FORM(); backend=backend)
+    x = form_solution.x[:, end]
+    u = form_solution.u[:, end]
+    β = form_solution.β
 
     # Perform Nataf transformation:
     nataf_obj = NatafTransformation(X, ρ_X)
@@ -83,7 +82,9 @@ function solve(problem::SensitivityProblemTypeI; backend = AutoForwardDiff())
         ∇g(x, Θ) / LinearAlgebra.norm(∇G(u, Θ))
     catch
         local ∇g(x, θ) = gradient(unknown -> g(x, unknown), AutoFiniteDiff(), θ)
-        local ∇G(u, θ) = gradient(unknown -> G(g, θ, nataf_obj, unknown), AutoFiniteDiff(), u)
+        local function ∇G(u, θ)
+            gradient(unknown -> G(g, θ, nataf_obj, unknown), AutoFiniteDiff(), u)
+        end
         ∇g(x, Θ) / LinearAlgebra.norm(∇G(u, Θ))
     end
 
@@ -98,28 +99,42 @@ end
 
 Function used to solve sensitivity problems of type II (sensitivities w.r.t. the parameters of the random vector).
 """
-function solve(problem::SensitivityProblemTypeII; backend = AutoForwardDiff())
+function solve(problem::SensitivityProblemTypeII; backend=AutoForwardDiff())
     # Extract the problem data:
-    X  = problem.X
+    X = problem.X
     ρ_X = problem.ρ_X
-    g  = problem.g
-    Θ  = problem.Θ
+    g = problem.g
+    Θ = problem.Θ
 
     # Define a reliability problem for the FORM analysis:
     form_problem = ReliabilityProblem(X(Θ), ρ_X, g)
 
     # Solve the reliability problem using the FORM:
-    form_solution = solve(form_problem, FORM(), backend = backend)
-    x            = form_solution.x[:, end]
-    α            = form_solution.α[:, end]
-    β            = form_solution.β
+    form_solution = solve(form_problem, FORM(); backend=backend)
+    x = form_solution.x[:, end]
+    α = form_solution.α[:, end]
+    β = form_solution.β
 
     # Define the Jacobian of the transformation function w.r.t. the parameters of the random vector and compute the sensitivity vector for the reliability index:
     ∇β = try
-        local ∇T(θ) = jacobian(unknown -> transformsamples(NatafTransformation(X(unknown), ρ_X), x, :X2U), backend, θ)
+        local function ∇T(θ)
+            jacobian(
+                unknown ->
+                    transformsamples(NatafTransformation(X(unknown), ρ_X), x, :X2U),
+                backend,
+                θ,
+            )
+        end
         vec(LinearAlgebra.transpose(α) * ∇T(Θ))
     catch
-        local ∇T(θ) = jacobian(unknown -> transformsamples(NatafTransformation(X(unknown), ρ_X), x, :X2U), AutoFiniteDiff(), θ)
+        local function ∇T(θ)
+            jacobian(
+                unknown ->
+                    transformsamples(NatafTransformation(X(unknown), ρ_X), x, :X2U),
+                AutoFiniteDiff(),
+                θ,
+            )
+        end
         vec(LinearAlgebra.transpose(α) * ∇T(Θ))
     end
 
@@ -129,7 +144,12 @@ function solve(problem::SensitivityProblemTypeII; backend = AutoForwardDiff())
     return SensitivityProblemCache(form_solution, ∇β, ∇PoF)
 end
 
-function G(g::Function, Θ::AbstractVector{<:Real}, nataf_obj::NatafTransformation, U_sample::AbstractVector{<:Real})
+function G(
+    g::Function,
+    Θ::AbstractVector{<:Real},
+    nataf_obj::NatafTransformation,
+    U_sample::AbstractVector{<:Real},
+)
     # Transform samples:
     X_sample = transformsamples(nataf_obj, U_sample, :U2X)
 

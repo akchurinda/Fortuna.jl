@@ -4,12 +4,12 @@
 
 In general, 4 main "items" are always need to fully define an inverse reliability problem and successfully solve it to find the parameter of interest ``\theta``:
 
-| Item | Description |
-| :--- | :--- |
-| ``\vec{X}`` | Random vector with correlated non-normal marginals |
-| ``\rho^{X}`` | Correlation matrix |
-| ``g(\vec{X}, \theta)`` | Limit state function |
-| ``\beta`` | Target reliability index |
+| Item                   | Description                                        |
+|:---------------------- |:-------------------------------------------------- |
+| ``\vec{X}``            | Random vector with correlated non-normal marginals |
+| ``\rho^{X}``           | Correlation matrix                                 |
+| ``g(\vec{X}, \theta)`` | Limit state function                               |
+| ``\beta``              | Target reliability index                           |
 
 `Fortuna.jl` package uses these 4 "items" to fully define inverse reliability problems of type I using `SensitivityProblem()` type as shown in the example below.
 
@@ -25,7 +25,7 @@ X_1 = randomvariable("Normal", "M", [0, 1])
 X_2 = randomvariable("Normal", "M", [0, 1])
 X_3 = randomvariable("Normal", "M", [0, 1])
 X_4 = randomvariable("Normal", "M", [0, 1])
-X   = [X_1, X_2, X_3, X_4]
+X = [X_1, X_2, X_3, X_4]
 
 # Define the correlation matrix:
 ρ_X = Matrix{Float64}(1.0 * I, 4, 4)
@@ -48,7 +48,7 @@ After defining an inverse reliability problem, `Fortuna.jl` allows to easily sol
 
 ```@example inverse_reliability_problem
 # Perform the inverse reliability analysis:
-solution = solve(problem, 0.1, x_0 = [0.2, 0.2, 0.2, 0.2])
+solution = solve(problem, 0.1; x_0=[0.2, 0.2, 0.2, 0.2])
 println("x = $(solution.x[:, end])")
 println("θ = $(solution.θ[end])")
 ```

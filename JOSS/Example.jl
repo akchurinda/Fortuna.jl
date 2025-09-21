@@ -25,7 +25,7 @@ println("Failure probability: ", solution.PoF)
 # Plot the failure domain:
 using Colors
 using CairoMakie
-CairoMakie.activate!(type = :svg)
+CairoMakie.activate!(; type=:svg)
 CairoMakie.set_theme!(theme_latexfonts())
 
 u_1_range = -6:0.01:6
@@ -38,54 +38,67 @@ g_vals = [g([u_1, u_2]) for u_1 in u_1_range, u_2 in u_2_range]
 
 colors = Colors.JULIA_LOGO_COLORS
 begin
-    F = Figure(size = 72 .* (6, 6))
+    F = Figure(; size=72 .* (6, 6))
 
-    A = Axis(F[1, 1],
-        xlabel = L"u_1",
-        ylabel = L"u_2",
-        xticks = -6:3:6,
-        yticks = -6:3:6,
-        xminorticks = IntervalsBetween(5),
-        yminorticks = IntervalsBetween(5),
-        xminorgridvisible = true,
-        yminorgridvisible = true,
-        limits = (-6, 6, -6, 6),
-        aspect = 1)
+    A = Axis(
+        F[1, 1];
+        xlabel=L"u_1",
+        ylabel=L"u_2",
+        xticks=-6:3:6,
+        yticks=-6:3:6,
+        xminorticks=IntervalsBetween(5),
+        yminorticks=IntervalsBetween(5),
+        xminorgridvisible=true,
+        yminorgridvisible=true,
+        limits=(-6, 6, -6, 6),
+        aspect=1,
+    )
 
-    contourf!(A, u_1_range, u_2_range, g_vals,
-        levels     = [0],
-        extendlow  = (colorant"#FF1F5B", 0.30),
-        extendhigh = (colorant"#00CD6C", 0.30))
+    contourf!(
+        A,
+        u_1_range,
+        u_2_range,
+        g_vals;
+        levels=[0],
+        extendlow=(colorant"#FF1F5B", 0.30),
+        extendhigh=(colorant"#00CD6C", 0.30),
+    )
 
-    contour!(A, u_1_range, u_2_range, g_vals,
-        levels    = [0],
-        color     = :black,
-        linewidth = 0.5)
+    contour!(A, u_1_range, u_2_range, g_vals; levels=[0], color=:black, linewidth=0.5)
 
-    contourf!(A, u_1_range, u_2_range, f_vals, 
-        levels   = 0:0.1:1, 
-        colormap = cgrad([:transparent, colorant"#009ADE"]))
+    contourf!(
+        A,
+        u_1_range,
+        u_2_range,
+        f_vals;
+        levels=0:0.1:1,
+        colormap=cgrad([:transparent, colorant"#009ADE"]),
+    )
 
-    contour!(A, u_1_range, u_2_range, f_vals, 
-        levels    = 0:0.1:1, 
-        colormap  = cgrad([:transparent, :black]),
-        linewidth = 0.5)
+    contour!(
+        A,
+        u_1_range,
+        u_2_range,
+        f_vals;
+        levels=0:0.1:1,
+        colormap=cgrad([:transparent, :black]),
+        linewidth=0.5,
+    )
 
-    text!(A, (+2, +5), 
-        text = L"Failure domain, \\ $g(u_1, u_2) \leq 0$",
-        align = (:center, :center))
+    text!(
+        A,
+        (+2, +5);
+        text=L"Failure domain, \\ $g(u_1, u_2) \leq 0$",
+        align=(:center, :center),
+    )
 
-    text!(A, (-2, -5), 
-        text = L"Safe domain, \\ $g(u_1, u_2) > 0$",
-        align = (:center, :center))
+    text!(A, (-2, -5); text=L"Safe domain, \\ $g(u_1, u_2) > 0$", align=(:center, :center))
 
-    text!(A, (+3, -3), 
-        text = L"Joint PDF, \\ $f_{\vec{U}}(u_1, u_2)$",
-        align = (:center, :center))
+    text!(
+        A, (+3, -3); text=L"Joint PDF, \\ $f_{\vec{U}}(u_1, u_2)$", align=(:center, :center)
+    )
 
-    arc!(A, (0, -3), 3, π / 12, π / 4,
-        color     = :black,
-        linewidth = 0.5)
+    arc!(A, (0, -3), 3, π / 12, π / 4; color=:black, linewidth=0.5)
 
     display(F)
 end

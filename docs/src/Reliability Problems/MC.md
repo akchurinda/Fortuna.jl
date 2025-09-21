@@ -31,8 +31,9 @@ where ``N`` is the number of generated sampled. The estimator ``\hat{P}_{f}`` is
 ```
 
 !!! tip
+    
     For typical structural reliability problems with true probabilities of failure ``P_{f}`` of ``\approx 10^{-3}``, it is recommended to use ``N = 10^{6}`` samples to get the coefficient of variation of the estimator ``V_{P_{f}}`` of ``\approx 0.10``.
-
+    
     ```@raw html
     <img src="../../assets/Theory-MonteCarlo-1.png" class="center" style="max-height:350px; border-radius:2.5px;"/>
     ```

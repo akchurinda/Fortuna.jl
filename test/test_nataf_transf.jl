@@ -70,7 +70,7 @@ end
     # Define a random vector:
     X_1  = randomvariable("Normal", "M", [0, 1])
     X_2  = randomvariable("Normal", "M", [0, 1])
-    X   = [X_1, X_2]
+    X    = [X_1, X_2]
     ρ_X  = [1 0; 0 1]
 
     # Perform Nataf transformation:

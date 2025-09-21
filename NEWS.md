@@ -3,6 +3,7 @@
 ## Release V0.11.0
 
 - Refactored the entire codebase to use `snake_case` for consistency and clarity.
+- Improved the stability of the Nataf Transformation.
 
 ## Release V0.10.1
 

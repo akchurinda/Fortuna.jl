@@ -33,11 +33,11 @@ If you have used `Fortuna.jl` package for a scientific publication, please cite 
 
 ## License
 
-`Fortuna.jl` package is distributed under the [MIT license](https://en.wikipedia.org/wiki/MIT_License). More information can be found in the [`LICENSE.md`](https://github.com/AkchurinDA/Fortuna.jl/blob/main/LICENSE.md) file.
+`Fortuna.jl` package is distributed under the [MIT license](https://en.wikipedia.org/wiki/MIT_License). More information can be found in the [`LICENSE.md`](https://github.com/akchurinda/Fortuna.jl/blob/main/LICENSE.md) file.
 
 ## Help and Support
 
-For assistance with the package, please raise an issue on the [GitHub Issues](https://github.com/AkchurinDA/Fortuna.jl/issues) page. Please use the appropriate labels to indicate the specific functionality you are inquiring about. Alternatively, contact the author directly at [AkchurinDA@gmail.com](mailto:AkchurinDA@gmail.com?subject=Fortuna.jl).
+For assistance with the package, please raise an issue on the [GitHub Issues](https://github.com/akchurinda/Fortuna.jl/issues) page. Please use the appropriate labels to indicate the specific functionality you are inquiring about. Alternatively, contact the author directly at [akchurinda@gmail.com](mailto:akchurinda@gmail.com?subject=Fortuna.jl).
 
 ## Acknowledgements
 

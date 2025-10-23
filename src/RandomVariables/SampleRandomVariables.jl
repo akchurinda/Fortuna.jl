@@ -87,12 +87,12 @@ function Distributions.rand(
     sampling_technique::Symbol,
 )
     # Compute number of dimensions:
-    num_dims = length(random_vector)
+    D = length(random_vector)
 
     # Generate samples:
     samples = [
         Distributions.rand(rng, random_vector[i], num_samples, sampling_technique) for
-        i in 1:num_dims
+        i in 1:D
     ]
     samples = vcat(samples'...)
 
@@ -134,12 +134,12 @@ function Distributions.rand(
     L = trans_obj.L
 
     # Compute number of dimensions:
-    num_dims = length(X)
+    D = length(X)
 
     # Generate samples of uncorrelated normal random variables U:
     U_samples = [
         Distributions.rand(rng, Distributions.Normal(), num_samples, sampling_technique) for
-        _ in 1:num_dims
+        _ in 1:D
     ]
     U_samples = vcat(U_samples'...)
 
@@ -150,7 +150,7 @@ function Distributions.rand(
     X_samples = [
         Distributions.quantile.(
             X[i], Distributions.cdf.(Distributions.Normal(), Z_samples[i, :])
-        ) for i in 1:num_dims
+        ) for i in 1:D
     ]
     X_samples = vcat(X_samples'...)
 

@@ -228,16 +228,16 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend=AutoFo
         )
 
         # Compute number of dimensions: 
-        num_dims = length(X)
+        D = length(X)
 
         # Preallocate:
         β = Vector{Float64}(undef, max_num_iter)
-        x = Matrix{Float64}(undef, num_dims, max_num_iter)
-        u = Matrix{Float64}(undef, num_dims, max_num_iter)
-        μ = Matrix{Float64}(undef, num_dims, max_num_iter)
-        σ = Matrix{Float64}(undef, num_dims, max_num_iter)
-        ∇G = Matrix{Float64}(undef, num_dims, max_num_iter)
-        α = Matrix{Float64}(undef, num_dims, max_num_iter)
+        x = Matrix{Float64}(undef, D, max_num_iter)
+        u = Matrix{Float64}(undef, D, max_num_iter)
+        μ = Matrix{Float64}(undef, D, max_num_iter)
+        σ = Matrix{Float64}(undef, D, max_num_iter)
+        ∇G = Matrix{Float64}(undef, D, max_num_iter)
+        α = Matrix{Float64}(undef, D, max_num_iter)
         convergence = true
 
         # Initialize the design point in X-space:
@@ -245,7 +245,7 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend=AutoFo
 
         # Force the design point to lay on the failure boundary:
         function F(u, p)
-            x′ = zeros(eltype(u), num_dims)
+            x′ = zeros(eltype(u), D)
             x′[1:(end - 1)] = p[1:(end - 1)]
             x′[end] = u
 
@@ -272,7 +272,7 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend=AutoFo
         # Start iterating:
         for i in 1:max_num_iter
             # Compute the mean and standard deviation values of the equivalient normal marginals:
-            for j in 1:num_dims
+            for j in 1:D
                 σ[j, i] =
                     Distributions.pdf(
                         Distributions.Normal(),
@@ -365,15 +365,15 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend=AutoFo
         x_0 = submethod.x_0
 
         # Compute number of dimensions: 
-        num_dims = length(X)
+        D = length(X)
 
         # Preallocate:
-        x = Matrix{Float64}(undef, num_dims, max_num_iter)
-        u = Matrix{Float64}(undef, num_dims, max_num_iter)
+        x = Matrix{Float64}(undef, D, max_num_iter)
+        u = Matrix{Float64}(undef, D, max_num_iter)
         G = Vector{Float64}(undef, max_num_iter)
-        ∇G = Matrix{Float64}(undef, num_dims, max_num_iter)
-        α = Matrix{Float64}(undef, num_dims, max_num_iter)
-        d = Matrix{Float64}(undef, num_dims, max_num_iter)
+        ∇G = Matrix{Float64}(undef, D, max_num_iter)
+        α = Matrix{Float64}(undef, D, max_num_iter)
+        d = Matrix{Float64}(undef, D, max_num_iter)
         convergence = true
 
         # Perform the Nataf Transformation:
@@ -481,15 +481,15 @@ function solve(problem::ReliabilityProblem, AnalysisMethod::FORM; backend=AutoFo
         c_0 = submethod.c_0
 
         # Compute number of dimensions: 
-        num_dims = length(X)
+        D = length(X)
 
         # Preallocate:
-        x = Matrix{Float64}(undef, num_dims, max_num_iter)
-        u = Matrix{Float64}(undef, num_dims, max_num_iter)
+        x = Matrix{Float64}(undef, D, max_num_iter)
+        u = Matrix{Float64}(undef, D, max_num_iter)
         G = Vector{Float64}(undef, max_num_iter)
-        ∇G = Matrix{Float64}(undef, num_dims, max_num_iter)
-        α = Matrix{Float64}(undef, num_dims, max_num_iter)
-        d = Matrix{Float64}(undef, num_dims, max_num_iter)
+        ∇G = Matrix{Float64}(undef, D, max_num_iter)
+        α = Matrix{Float64}(undef, D, max_num_iter)
+        d = Matrix{Float64}(undef, D, max_num_iter)
         c = Vector{Float64}(undef, max_num_iter - 1)
         m = Vector{Float64}(undef, max_num_iter - 1)
         λ = Vector{Float64}(undef, max_num_iter - 1)

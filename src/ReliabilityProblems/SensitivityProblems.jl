@@ -82,9 +82,7 @@ function solve(problem::SensitivityProblemTypeI; backend=AutoForwardDiff())
         ∇g(x, Θ) / LinearAlgebra.norm(∇G(u, Θ))
     catch
         local ∇g(x, θ) = gradient(unknown -> g(x, unknown), AutoFiniteDiff(), θ)
-        local function ∇G(u, θ)
-            gradient(unknown -> G(g, θ, nataf_obj, unknown), AutoFiniteDiff(), u)
-        end
+        local ∇G(u, θ) = gradient(unknown -> G(g, θ, nataf_obj, unknown), AutoFiniteDiff(), u)
         ∇g(x, Θ) / LinearAlgebra.norm(∇G(u, Θ))
     end
 

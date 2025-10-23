@@ -121,16 +121,16 @@ function solve(
         Δ = submethod.Δ
 
         # Compute number of dimensions: 
-        num_dims = length(X)
+        D = length(X)
 
         # Perform Nataf transformation:
         nataf_obj = NatafTransformation(X, ρ_X)
 
         # Compute the Hessian at the design point in U-space:
-        H = gethessian(g, nataf_obj, num_dims, u, Δ)
+        H = gethessian(g, nataf_obj, D, u, Δ)
 
         # Compute the orthonomal matrix:
-        R = getorthonormal(α, num_dims)
+        R = getorthonormal(α, D)
 
         # Evaluate the principal curvatures:
         A = R * H * LinearAlgebra.transpose(R) / LinearAlgebra.norm(∇G)
@@ -178,13 +178,13 @@ function solve(
         return CFCache(form_solution, β_2, PoF_2, κ)
     elseif isa(submethod, PF)
         # Compute number of dimensions: 
-        num_dims = length(X)
+        D = length(X)
 
         # Perform Nataf transformation:
         nataf_obj = NatafTransformation(X, ρ_X)
 
         # Compute the orthonomal matrix:
-        R = getorthonormal(α, num_dims)
+        R = getorthonormal(α, D)
         u_rot = R * u
         if u_rot[end] < 0
             R = -R
@@ -200,12 +200,12 @@ function solve(
         end
 
         # Compute fitting points:
-        pos_fit_pts = Matrix{Float64}(undef, num_dims - 1, 2)
-        neg_fit_pts = Matrix{Float64}(undef, num_dims - 1, 2)
-        κ_1 = Matrix{Float64}(undef, num_dims - 1, 2)
-        for i in 1:(num_dims - 1)
+        pos_fit_pts = Matrix{Float64}(undef, D - 1, 2)
+        neg_fit_pts = Matrix{Float64}(undef, D - 1, 2)
+        κ_1 = Matrix{Float64}(undef, D - 1, 2)
+        for i in 1:(D - 1)
             function F(u, p)
-                u_prime = zeros(eltype(u), num_dims)
+                u_prime = zeros(eltype(u), D)
                 u_prime[i] = p
                 u_prime[end] = u
 
@@ -252,17 +252,17 @@ function solve(
         end
 
         # Compute number of hyperquadrants used to fit semiparabolas:
-        num_hyperquadrants = 2 ^ (num_dims - 1)
+        num_hyperquadrants = 2 ^ (D - 1)
 
         # Get all possible permutations of curvatures:
-        idx = Base.Iterators.repeated(1:2, num_dims - 1)
+        idx = Base.Iterators.repeated(1:2, D - 1)
         idx = Base.Iterators.product(idx...)
         idx = collect(idx)
         idx = vec(idx)
 
-        κ_2 = Matrix{Float64}(undef, num_hyperquadrants, num_dims - 1)
+        κ_2 = Matrix{Float64}(undef, num_hyperquadrants, D - 1)
         for i in 1:num_hyperquadrants
-            for j in 1:(num_dims - 1)
+            for j in 1:(D - 1)
                 κ_2[i, j] = κ_1[j, idx[i][j]]
             end
         end
@@ -320,18 +320,18 @@ end
 function gethessian(
     g::Function,
     nataf_obj::NatafTransformation,
-    num_dims::Integer,
+    D::Integer,
     u::Vector{Float64},
     Δ::Real,
 )
     # Preallocate:
-    H = Matrix{Float64}(undef, num_dims, num_dims)
+    H = Matrix{Float64}(undef, D, D)
 
-    for i in 1:num_dims
-        for j in 1:num_dims
+    for i in 1:D
+        for j in 1:D
             # Define the pertubation directions:
-            e_i = zeros(num_dims)
-            e_j = zeros(num_dims)
+            e_i = zeros(D)
+            e_j = zeros(D)
             e_i[i] = 1
             e_j[j] = 1
 
@@ -361,9 +361,9 @@ function gethessian(
     return H
 end
 
-function getorthonormal(α::Vector{Float64}, num_dims::Integer)
+function getorthonormal(α::Vector{Float64}, D::Integer)
     # Initilize the matrix:
-    A = Matrix(1.0 * I, num_dims, num_dims)
+    A = Matrix(1.0 * I, D, D)
     A = reverse(A; dims=2)
     A[:, 1] = LinearAlgebra.transpose(α)
 

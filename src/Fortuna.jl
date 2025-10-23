@@ -70,13 +70,13 @@ abstract type SORMSubmethod end
 # --------------------------------------------------
 # EXPORT TYPES AND FUNCTIONS
 # --------------------------------------------------
-include("transf/nataf_transf.jl")
-include("transf/rosen_transf.jl")
-include("rvs/define_rvs.jl")
-include("rvs/sample_rvs.jl")
-include("rel_problems/rel_problems.jl")
-include("inv_rel_problems.jl")
-include("sen_rel_problems.jl")
+include("IsoprobabilisticTransformations/NatafTransformation.jl")
+include("IsoprobabilisticTransformations/RosenblattTransformation.jl")
+include("RandomVariables/DefineRandomVariables.jl")
+include("RandomVariables/SampleRandomVariables.jl")
+include("ReliabilityProblems/ReliabilityProblems.jl")
+include("ReliabilityProblems/InverseReliabilityProblems.jl")
+include("ReliabilityProblems/SensitivityProblems.jl")
 export AbstractSamplingTechnique
 export ITS, LHS
 export AbstractTransformation

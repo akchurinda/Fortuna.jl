@@ -1,7 +1,7 @@
 name = "Fortuna"
 uuid = "c1a2adf5-a52e-430c-84bf-168fab86e0c1"
 authors = ["Damir Akchurin"]
-version = "0.10.3"
+version = "0.10.4"
 
 [deps]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"

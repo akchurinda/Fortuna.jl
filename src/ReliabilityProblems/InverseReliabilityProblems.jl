@@ -82,17 +82,17 @@ function solve(
     β = problem.β
 
     # Compute number of dimensions: 
-    num_dims = length(X)
+    D = length(X)
 
     # Preallocate:
-    x = Matrix{Float64}(undef, num_dims, max_num_iters)
-    u = Matrix{Float64}(undef, num_dims, max_num_iters)
+    x = Matrix{Float64}(undef, D, max_num_iters)
+    u = Matrix{Float64}(undef, D, max_num_iters)
     θ = Vector{Float64}(undef, max_num_iters)
     G = Vector{Float64}(undef, max_num_iters)
-    ∇G_u = Matrix{Float64}(undef, num_dims, max_num_iters)
+    ∇G_u = Matrix{Float64}(undef, D, max_num_iters)
     ∇G_θ = Vector{Float64}(undef, max_num_iters)
-    α = Matrix{Float64}(undef, num_dims, max_num_iters)
-    du = Matrix{Float64}(undef, num_dims, max_num_iters)
+    α = Matrix{Float64}(undef, D, max_num_iters)
+    du = Matrix{Float64}(undef, D, max_num_iters)
     dθ = Vector{Float64}(undef, max_num_iters)
     c_1 = Vector{Float64}(undef, max_num_iters)
     c_2 = Vector{Float64}(undef, max_num_iters)

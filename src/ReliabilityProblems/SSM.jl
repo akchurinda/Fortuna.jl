@@ -56,7 +56,7 @@ function solve(problem::ReliabilityProblem, analysis_method::SSM)
     nataf_obj = NatafTransformation(X, ρ_X)
 
     # Compute number of dimensions: 
-    num_dims = length(X)
+    D = length(X)
 
     # Compute number of Markov chains within each subset:
     num_mcs = floor(Integer, p_0 * num_samples)
@@ -75,17 +75,17 @@ function solve(problem::ReliabilityProblem, analysis_method::SSM)
     for i in 1:max_num_subsets
         if i == 1
             # Generate samples in the standard normal space:
-            U_samples = Distributions.randn(num_dims, num_samples)
+            U_samples = Distributions.randn(D, num_samples)
         else
             # Preallocate:
-            U_samples = zeros(num_dims, num_mcs * num_samples_chain)
+            U_samples = zeros(D, num_mcs * num_samples_chain)
 
             # Generate samples using the Modified Metropolis-Hastings algorithm:
             for j in 1:num_mcs
                 U_samples[:, (num_samples_chain * (j - 1) + 1):(num_samples_chain * j)] = ModifiedMetropolisHastings(
                     U_samples_subset[i - 1][:, j],
                     C_subset[i - 1],
-                    num_dims,
+                    D,
                     num_samples_chain,
                     nataf_obj,
                     g,
@@ -151,18 +151,18 @@ end
 function ModifiedMetropolisHastings(
     start_point::Vector{Float64},
     curr_threshold::Float64,
-    num_dims::Integer,
+    D::Integer,
     num_samples_chain::Integer,
     nataf_obj::NatafTransformation,
     g::Function,
 )
     # Preallocate:
-    chain_samples = zeros(num_dims, num_samples_chain)
+    chain_samples = zeros(D, num_samples_chain)
     chain_samples[:, 1] = start_point
 
     # Define a standard multivariate normal PDF:
-    M = zeros(num_dims)
-    Σ = Matrix(1.0 * LinearAlgebra.I, num_dims, num_dims)
+    M = zeros(D)
+    Σ = Matrix(1.0 * LinearAlgebra.I, D, D)
     ϕ = Distributions.MvNormal(M, Σ)
 
     # Pregenerate uniformly-distributed samples:
@@ -172,7 +172,7 @@ function ModifiedMetropolisHastings(
     for i in 1:(num_samples_chain - 1)
         # Define a proposal density:
         M = chain_samples[:, i]
-        Σ = Matrix(1.0 * LinearAlgebra.I, num_dims, num_dims)
+        Σ = Matrix(1.0 * LinearAlgebra.I, D, D)
         q = Distributions.MvNormal(M, Σ)
 
         # Propose a new state:

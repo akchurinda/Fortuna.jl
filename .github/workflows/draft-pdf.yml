@@ -13,7 +13,7 @@ jobs:
           journal: joss
           paper-path: JOSS/paper.md
       - name: Upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: paper
           path: JOSS/paper.pdf

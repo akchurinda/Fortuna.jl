@@ -105,12 +105,12 @@ println(&quot;β from SORM: $(solution.β_2[2]) (Breitung)&quot;)
 println(&quot;PoF from FORM: $(solution.form_solution.PoF)&quot;)
 println(&quot;PoF from SORM: $(solution.PoF_2[1]) (Hohenbichler and Rackwitz)&quot;)
 println(&quot;PoF from SORM: $(solution.PoF_2[2]) (Breitung)&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SORM:
-β from FORM: 2.466021207431168
-β from SORM: 2.34102658931775 (Hohenbichler and Rackwitz)
-β from SORM: 2.3595535850413185 (Breitung)
-PoF from FORM: 0.006831162247313028
-PoF from SORM: 0.00961539873696044 (Hohenbichler and Rackwitz)
-PoF from SORM: 0.009148469091548015 (Breitung)</code></pre><h3 id="Point-Fitting-Method"><a class="docs-heading-anchor" href="#Point-Fitting-Method">Point-Fitting Method</a><a id="Point-Fitting-Method-1"></a><a class="docs-heading-anchor-permalink" href="#Point-Fitting-Method" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Perform reliability analysis using point-fitting SORM:
+β from FORM: 2.466021207431173
+β from SORM: 2.341026589039104 (Hohenbichler and Rackwitz)
+β from SORM: 2.359553584804177 (Breitung)
+PoF from FORM: 0.006831162247312926
+PoF from SORM: 0.009615398744136854 (Hohenbichler and Rackwitz)
+PoF from SORM: 0.009148469097395253 (Breitung)</code></pre><h3 id="Point-Fitting-Method"><a class="docs-heading-anchor" href="#Point-Fitting-Method">Point-Fitting Method</a><a id="Point-Fitting-Method-1"></a><a class="docs-heading-anchor-permalink" href="#Point-Fitting-Method" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Perform reliability analysis using point-fitting SORM:
 solution = solve(problem, SORM(PF()))
 println(&quot;SORM:&quot;)
 println(&quot;β from FORM: $(solution.form_solution.β)&quot;)
@@ -119,12 +119,12 @@ println(&quot;β from SORM: $(solution.β_2[2]) (Breitung)&quot;)
 println(&quot;PoF from FORM: $(solution.form_solution.PoF)&quot;)
 println(&quot;PoF from SORM: $(solution.PoF_2[1]) (Hohenbichler and Rackwitz)&quot;)
 println(&quot;PoF from SORM: $(solution.PoF_2[2]) (Breitung)&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SORM:
-β from FORM: 2.466021207431168
-β from SORM: 2.353666599587308 (Hohenbichler and Rackwitz)
-β from SORM: 2.3692855426563395 (Breitung)
-PoF from FORM: 0.006831162247313028
-PoF from SORM: 0.009294637847494697 (Hohenbichler and Rackwitz)
-PoF from SORM: 0.008911243869536706 (Breitung)</code></pre><h2 id="Subset-Simulation-Method"><a class="docs-heading-anchor" href="#Subset-Simulation-Method">Subset Simulation Method</a><a id="Subset-Simulation-Method-1"></a><a class="docs-heading-anchor-permalink" href="#Subset-Simulation-Method" title="Permalink"></a></h2><pre><code class="language-julia hljs"># Define random vector:
+β from FORM: 2.466021207431173
+β from SORM: 2.3536665995873123 (Hohenbichler and Rackwitz)
+β from SORM: 2.369285542656343 (Breitung)
+PoF from FORM: 0.006831162247312926
+PoF from SORM: 0.009294637847494593 (Hohenbichler and Rackwitz)
+PoF from SORM: 0.008911243869536602 (Breitung)</code></pre><h2 id="Subset-Simulation-Method"><a class="docs-heading-anchor" href="#Subset-Simulation-Method">Subset Simulation Method</a><a id="Subset-Simulation-Method-1"></a><a class="docs-heading-anchor-permalink" href="#Subset-Simulation-Method" title="Permalink"></a></h2><pre><code class="language-julia hljs"># Define random vector:
 X_1 = randomvariable(&quot;Normal&quot;, &quot;M&quot;, [0, 1])
 X_2 = randomvariable(&quot;Normal&quot;, &quot;M&quot;, [0, 1])
 X = [X_1, X_2]
@@ -143,4 +143,4 @@ problem = ReliabilityProblem(X, ρ_X, g)
 solution = solve(problem, SSM())
 println(&quot;SSM:&quot;)
 println(&quot;PoF: $(solution.PoF)&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SSM:
-PoF: 0.0013421634215000002</code></pre><img src="../assets/Examples-SubsetSimulationMethod-1.png" class="center" style="max-height:350px; border-radius:2.5px;"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../SensitivityProblems/">« Sensitivity Problems</a><a class="docs-footer-nextpage" href="../Research/">Research »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Saturday 3 January 2026 12:13">Saturday 3 January 2026</span>. Using Julia version 1.12.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+PoF: 0.0013421634215000002</code></pre><img src="../assets/Examples-SubsetSimulationMethod-1.png" class="center" style="max-height:350px; border-radius:2.5px;"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../SensitivityProblems/">« Sensitivity Problems</a><a class="docs-footer-nextpage" href="../Research/">Research »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Saturday 11 April 2026 17:53">Saturday 11 April 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
